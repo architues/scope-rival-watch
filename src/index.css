@@ -5,6 +5,47 @@
 
 @layer base {
   :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 263 85% 60%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 263 85% 60%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 250 100% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 263 85% 60%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 263 85% 60%;
+  }
+
+  .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
 
@@ -14,7 +55,7 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 263 70% 50%;
+    --primary: 263 85% 60%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 240 3.7% 15.9%;
@@ -31,57 +72,16 @@
 
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 263 70% 50%;
-
-    --radius: 0.75rem;
+    --ring: 263 85% 60%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 263 70% 50%;
+    --sidebar-primary: 263 85% 60%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 263 70% 50%;
-  }
-
-  .light {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-
-    --primary: 263 70% 50%;
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 45.1%;
-
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 263 70% 50%;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 263 70% 50%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 263 70% 50%;
+    --sidebar-ring: 263 85% 60%;
   }
 }
 
@@ -91,10 +91,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-inter;
-    background-image: 
-      radial-gradient(circle at 25% 25%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, rgba(79, 70, 229, 0.1) 0%, transparent 50%);
+    @apply bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 text-foreground font-inter min-h-screen;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -103,12 +100,8 @@
 }
 
 @layer components {
-  .glass {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10;
-  }
-  
   .glass-card {
-    @apply glass rounded-2xl p-6 shadow-2xl;
+    @apply bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl;
   }
 
   .gradient-primary {
@@ -119,29 +112,11 @@
     background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
   }
 
-  .animate-glow {
-    animation: glow 2s ease-in-out infinite alternate;
+  .metric-card {
+    @apply glass-card p-6 text-center hover:shadow-2xl transition-all duration-300;
   }
 
-  @keyframes glow {
-    from {
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-    }
-    to {
-      box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
-    }
-  }
-
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
+  .sidebar-blur {
+    @apply bg-white/95 backdrop-blur-xl border-r border-white/20;
   }
 }

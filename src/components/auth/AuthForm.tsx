@@ -27,58 +27,55 @@ export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-blue-600 p-3 rounded-lg">
-              <Zap className="h-6 w-6 text-white" />
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 p-4">
+      <div className="w-full max-w-md">
+        {/* Logo and Welcome */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 gradient-primary rounded-2xl mb-6">
+            <Zap className="h-8 w-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Welcome to ScopeRival</CardTitle>
-          <CardDescription className="text-gray-600">
-            Track your competitors and stay ahead of the game
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full"
-              />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700" 
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Sending magic link...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Send magic link
-                </div>
-              )}
-            </Button>
-          </form>
-          <p className="text-xs text-gray-500 text-center mt-4">
-            We'll send you a secure link to sign in instantly
-          </p>
-        </CardContent>
-      </Card>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to ScopeRival</h1>
+          <p className="text-gray-600">Track your competitors and stay ahead of the game</p>
+        </div>
+
+        {/* Auth Card */}
+        <Card className="glass-card border-0">
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-3">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-12 text-base border-gray-200 focus:border-primary focus:ring-primary"
+                />
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full h-12 gradient-primary text-white font-semibold text-base rounded-xl hover:shadow-lg transition-all duration-200" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Sending magic link...
+                  </div>
+                ) : (
+                  "Get a magic link sent to your email that will sign you instantly! ✨"
+                )}
+              </Button>
+            </form>
+            
+            <p className="text-xs text-gray-500 text-center mt-6">
+              By continuing, you agree to ScopeRival's Terms & Conditions and Privacy Policy
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

@@ -5,7 +5,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -39,42 +38,39 @@ const menuItems = [
 
 export const AppSidebar = () => {
   return (
-    <Sidebar className="border-r border-border/40">
-      <SidebarHeader className="p-6">
+    <Sidebar className="sidebar-blur">
+      <SidebarHeader className="p-6 border-b border-white/20">
         <div className="flex items-center gap-3">
-          <div className="gradient-primary p-2.5 rounded-xl">
-            <Zap className="h-6 w-6 text-white" />
+          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
+            <Zap className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold font-jakarta">ScopeRival</h1>
-            <p className="text-xs text-muted-foreground">Competitor Intelligence</p>
+            <h1 className="text-lg font-bold text-gray-900">ScopeRival</h1>
+            <p className="text-xs text-gray-500">Competitor Intelligence</p>
           </div>
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="px-4 py-6">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-3 mb-2">
-            Navigation
-          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild
                     isActive={item.isActive}
                     className={`
-                      w-full justify-start px-3 py-2.5 rounded-xl transition-all duration-200
+                      w-full justify-start px-4 py-3 rounded-xl transition-all duration-200 font-medium
                       ${item.isActive 
-                        ? 'bg-primary text-primary-foreground shadow-lg' 
-                        : 'hover:bg-accent/50 text-muted-foreground hover:text-foreground'
+                        ? 'bg-primary text-white shadow-lg shadow-primary/25' 
+                        : 'hover:bg-white/60 text-gray-700 hover:text-gray-900'
                       }
                     `}
                   >
                     <div className="flex items-center gap-3">
                       <item.icon className="h-5 w-5" />
-                      <span className="font-medium">{item.title}</span>
+                      <span>{item.title}</span>
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -84,15 +80,13 @@ export const AppSidebar = () => {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-6">
-        <div className="glass-card">
-          <div className="text-center">
-            <div className="w-8 h-8 gradient-secondary rounded-full mx-auto mb-2 flex items-center justify-center">
-              <Zap className="h-4 w-4 text-white" />
-            </div>
-            <p className="text-sm font-medium">Pro Plan</p>
-            <p className="text-xs text-muted-foreground">Unlimited tracking</p>
+      <SidebarFooter className="p-6 border-t border-white/20">
+        <div className="glass-card p-4 text-center">
+          <div className="w-8 h-8 gradient-secondary rounded-full mx-auto mb-3 flex items-center justify-center">
+            <Zap className="h-4 w-4 text-white" />
           </div>
+          <p className="text-sm font-semibold text-gray-900 mb-1">Pro Plan</p>
+          <p className="text-xs text-gray-500">Unlimited tracking</p>
         </div>
       </SidebarFooter>
     </Sidebar>
