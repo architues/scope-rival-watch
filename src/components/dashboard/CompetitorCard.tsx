@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, ExternalLink, AlertTriangle, Clock, Activity, MoreVertical } from 'lucide-react';
@@ -30,7 +29,7 @@ export const CompetitorCard = ({ competitor, onCheckChanges, onRemove }: Competi
   };
 
   return (
-    <div className="glass-card group hover:scale-105 transition-all duration-300 animate-float">
+    <div className="glass-card group hover:scale-105 transition-all duration-300">
       <div className="flex items-start justify-between mb-6">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
