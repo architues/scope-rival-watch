@@ -50,7 +50,7 @@ export const DashboardHeader = ({ totalCompetitors, activeChecks, recentChanges 
         {stats.map((stat, index) => (
           <div 
             key={stat.label} 
-            className="glass-card group hover:scale-105 transition-all duration-300 animate-glow"
+            className="glass-card group hover:scale-105 transition-all duration-300"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <div className="flex items-center justify-between mb-4">
