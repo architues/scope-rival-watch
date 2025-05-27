@@ -1,5 +1,6 @@
 
 import { useEffect } from 'react';
+import { Users } from 'lucide-react';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { AddCompetitorForm } from '@/components/dashboard/AddCompetitorForm';
 import { CompetitorCard } from '@/components/dashboard/CompetitorCard';
