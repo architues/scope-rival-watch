@@ -65,7 +65,7 @@ export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
                     Sending magic link...
                   </div>
                 ) : (
-                  "Get a magic link sent to your email that will sign you instantly! ✨"
+                  "Send Magic Link ✨"
                 )}
               </Button>
             </form>
