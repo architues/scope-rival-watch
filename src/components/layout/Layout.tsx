@@ -1,7 +1,9 @@
 
 import { User } from '@/types/competitor';
 import { Button } from '@/components/ui/button';
-import { LogOut, Zap } from 'lucide-react';
+import { LogOut, Menu, Bell } from 'lucide-react';
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
+import { AppSidebar } from './AppSidebar';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,42 +13,49 @@ interface LayoutProps {
 
 export const Layout = ({ children, user, onLogout }: LayoutProps) => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-600 p-2 rounded-lg">
-                <Zap className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">ScopeRival</h1>
-                <p className="text-xs text-gray-500">Competitor Tracking</p>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        
+        <SidebarInset className="flex-1">
+          {/* Top Header */}
+          <header className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+            <div className="flex h-16 items-center gap-4 px-6">
+              <SidebarTrigger className="lg:hidden" />
+              
+              <div className="flex-1" />
+              
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="sm" className="relative">
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full"></span>
+                </Button>
+                
+                <div className="flex items-center gap-3 pl-4 border-l border-border/40">
+                  <div className="text-right">
+                    <p className="text-sm font-medium">{user.name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={onLogout}
+                    className="flex items-center gap-2 hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </Button>
+                </div>
               </div>
             </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{user.name || 'User'}</p>
-                <p className="text-xs text-gray-500">{user.email}</p>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onLogout}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
-    </div>
+          </header>
+          
+          {/* Main Content */}
+          <main className="flex-1 p-6">
+            {children}
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };

@@ -1,8 +1,7 @@
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, ExternalLink, AlertTriangle, Clock, Activity } from 'lucide-react';
+import { RefreshCw, ExternalLink, AlertTriangle, Clock, Activity, MoreVertical } from 'lucide-react';
 import { Competitor } from '@/types/competitor';
 
 interface CompetitorCardProps {
@@ -14,10 +13,10 @@ interface CompetitorCardProps {
 export const CompetitorCard = ({ competitor, onCheckChanges, onRemove }: CompetitorCardProps) => {
   const getStatusColor = (status: Competitor['status']) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'checking': return 'bg-blue-100 text-blue-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+      case 'checking': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'error': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     }
   };
 
@@ -31,62 +30,83 @@ export const CompetitorCard = ({ competitor, onCheckChanges, onRemove }: Competi
   };
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">{competitor.name}</h3>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <ExternalLink className="h-4 w-4" />
-              <a 
-                href={competitor.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:text-blue-600 transition-colors"
-              >
-                {competitor.url.replace(/^https?:\/\//, '')}
-              </a>
+    <div className="glass-card group hover:scale-105 transition-all duration-300 animate-float">
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-sm">
+                {competitor.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold font-jakarta">{competitor.name}</h3>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <ExternalLink className="h-3 w-3" />
+                <a 
+                  href={competitor.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
+                  {competitor.url.replace(/^https?:\/\//, '')}
+                </a>
+              </div>
             </div>
           </div>
-          <Badge className={`${getStatusColor(competitor.status)} flex items-center gap-1`}>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Badge className={`${getStatusColor(competitor.status)} flex items-center gap-1 font-medium`}>
             {getStatusIcon(competitor.status)}
             {competitor.status}
           </Badge>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Last Checked</p>
-            <p className="text-sm font-medium text-gray-900">
-              {competitor.lastChecked.toLocaleDateString()} at {competitor.lastChecked.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Changes Detected</p>
-            <p className="text-sm font-medium text-gray-900">{competitor.changesDetected}</p>
-          </div>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button 
-            onClick={() => onCheckChanges(competitor.id)}
-            disabled={competitor.status === 'checking'}
-            size="sm"
-            className="flex-1 bg-blue-600 hover:bg-blue-700"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${competitor.status === 'checking' ? 'animate-spin' : ''}`} />
-            Check Changes
-          </Button>
-          <Button 
-            onClick={() => onRemove(competitor.id)}
-            variant="outline"
-            size="sm"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            Remove
+          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <MoreVertical className="h-4 w-4" />
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Checked</p>
+          <p className="text-sm font-medium">
+            {competitor.lastChecked.toLocaleDateString()}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {competitor.lastChecked.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Changes Detected</p>
+          <div className="flex items-center gap-2">
+            <p className="text-2xl font-bold font-jakarta">{competitor.changesDetected}</p>
+            {competitor.changesDetected > 0 && (
+              <div className="h-2 w-2 bg-primary rounded-full animate-pulse"></div>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex gap-2">
+        <Button 
+          onClick={() => onCheckChanges(competitor.id)}
+          disabled={competitor.status === 'checking'}
+          size="sm"
+          className="flex-1 gradient-primary hover:opacity-90 transition-opacity font-medium"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${competitor.status === 'checking' ? 'animate-spin' : ''}`} />
+          Check Changes
+        </Button>
+        <Button 
+          onClick={() => onRemove(competitor.id)}
+          variant="outline"
+          size="sm"
+          className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
+        >
+          Remove
+        </Button>
+      </div>
+    </div>
   );
 };
