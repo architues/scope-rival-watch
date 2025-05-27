@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { AddCompetitorForm } from '@/components/dashboard/AddCompetitorForm';
@@ -161,7 +160,7 @@ export const Dashboard = () => {
       <AddCompetitorForm onAddCompetitor={handleAddCompetitor} />
       
       <div className="mb-8">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">Your Competitors</h3>
+        <h3 className="text-xl font-semibold text-white mb-4">Your Competitors</h3>
         {competitors.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
             <p className="text-gray-500">No competitors added yet</p>
