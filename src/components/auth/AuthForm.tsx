@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, Zap } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AuthFormProps {
   onMagicLinkSent: (email: string) => void;
@@ -12,6 +13,7 @@ interface AuthFormProps {
 export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,11 +21,16 @@ export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
 
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsLoading(false);
-    onMagicLinkSent(email);
+    try {
+      const result = await signIn(email);
+      if (!result.error) {
+        onMagicLinkSent(email);
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

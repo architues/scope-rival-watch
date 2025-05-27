@@ -27,6 +27,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Show success message when user signs in
+        if (event === 'SIGNED_IN' && session) {
+          toast({
+            title: "Welcome!",
+            description: "You have been successfully signed in.",
+          });
+        }
       }
     );
 
@@ -42,22 +50,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string) => {
     try {
+      setLoading(true);
+      console.log('Attempting to sign in with email:', email);
+      
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: `${window.location.origin}`,
         },
       });
 
       if (error) {
         console.error('Auth error:', error);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
         return { error: error.message };
       }
+
+      console.log('Magic link sent successfully');
+      toast({
+        title: "Magic link sent!",
+        description: "Check your email for the login link.",
+      });
 
       return {};
     } catch (error) {
       console.error('Sign in error:', error);
-      return { error: 'An unexpected error occurred' };
+      const errorMessage = 'An unexpected error occurred';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return { error: errorMessage };
+    } finally {
+      setLoading(false);
     }
   };
 
