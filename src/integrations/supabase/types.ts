@@ -9,7 +9,166 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      change_records: {
+        Row: {
+          change_type: Database["public"]["Enums"]["change_type"]
+          competitor_id: string
+          competitor_name: string
+          created_at: string | null
+          description: string
+          detected_at: string | null
+          id: string
+          severity: Database["public"]["Enums"]["change_severity"] | null
+        }
+        Insert: {
+          change_type: Database["public"]["Enums"]["change_type"]
+          competitor_id: string
+          competitor_name: string
+          created_at?: string | null
+          description: string
+          detected_at?: string | null
+          id?: string
+          severity?: Database["public"]["Enums"]["change_severity"] | null
+        }
+        Update: {
+          change_type?: Database["public"]["Enums"]["change_type"]
+          competitor_id?: string
+          competitor_name?: string
+          created_at?: string | null
+          description?: string
+          detected_at?: string | null
+          id?: string
+          severity?: Database["public"]["Enums"]["change_severity"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_records_competitor_id_fkey"
+            columns: ["competitor_id"]
+            isOneToOne: false
+            referencedRelation: "competitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitors: {
+        Row: {
+          added_at: string | null
+          changes_detected: number | null
+          created_at: string | null
+          id: string
+          last_checked: string | null
+          name: string
+          status: Database["public"]["Enums"]["competitor_status"] | null
+          updated_at: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          changes_detected?: number | null
+          created_at?: string | null
+          id?: string
+          last_checked?: string | null
+          name: string
+          status?: Database["public"]["Enums"]["competitor_status"] | null
+          updated_at?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          changes_detected?: number | null
+          created_at?: string | null
+          id?: string
+          last_checked?: string | null
+          name?: string
+          status?: Database["public"]["Enums"]["competitor_status"] | null
+          updated_at?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monitoring_jobs: {
+        Row: {
+          competitor_id: string
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          scheduled_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          competitor_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          scheduled_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          competitor_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          scheduled_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitoring_jobs_competitor_id_fkey"
+            columns: ["competitor_id"]
+            isOneToOne: false
+            referencedRelation: "competitors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitoring_jobs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id: string
+          name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +177,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      change_severity: "low" | "medium" | "high"
+      change_type: "content" | "design" | "structure"
+      competitor_status: "active" | "checking" | "error" | "paused"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +294,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      change_severity: ["low", "medium", "high"],
+      change_type: ["content", "design", "structure"],
+      competitor_status: ["active", "checking", "error", "paused"],
+    },
   },
 } as const

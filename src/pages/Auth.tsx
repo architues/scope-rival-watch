@@ -2,15 +2,19 @@
 import { useState } from 'react';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { MagicLinkSent } from '@/components/auth/MagicLinkSent';
+import { useAuth } from '@/hooks/useAuth';
 
-interface AuthPageProps {
-  onLogin: (user: { id: string; email: string; name?: string }) => void;
-}
-
-export const AuthPage = ({ onLogin }: AuthPageProps) => {
+export const AuthPage = () => {
   const [magicLinkEmail, setMagicLinkEmail] = useState<string | null>(null);
+  const { signIn } = useAuth();
 
-  const handleMagicLinkSent = (email: string) => {
+  const handleMagicLinkSent = async (email: string) => {
+    const result = await signIn(email);
+    if (result.error) {
+      // Handle error - could show toast or set error state
+      console.error('Sign in error:', result.error);
+      return;
+    }
     setMagicLinkEmail(email);
   };
 
@@ -18,22 +22,12 @@ export const AuthPage = ({ onLogin }: AuthPageProps) => {
     setMagicLinkEmail(null);
   };
 
-  const handleSimulateLogin = () => {
-    if (magicLinkEmail) {
-      onLogin({
-        id: 'demo-user-1',
-        email: magicLinkEmail,
-        name: magicLinkEmail.split('@')[0]
-      });
-    }
-  };
-
   if (magicLinkEmail) {
     return (
       <MagicLinkSent 
         email={magicLinkEmail} 
         onBack={handleBack}
-        onSimulateLogin={handleSimulateLogin}
+        onSimulateLogin={() => {}} // Removed demo functionality for production
       />
     );
   }

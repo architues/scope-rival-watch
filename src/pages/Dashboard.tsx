@@ -1,148 +1,99 @@
-import { useState } from 'react';
+
+import { useEffect } from 'react';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { AddCompetitorForm } from '@/components/dashboard/AddCompetitorForm';
 import { CompetitorCard } from '@/components/dashboard/CompetitorCard';
 import { ChangeHistoryTable } from '@/components/dashboard/ChangeHistoryTable';
-import { Competitor, ChangeRecord } from '@/types/competitor';
+import { useCompetitors } from '@/hooks/useCompetitors';
+import { useChangeRecords } from '@/hooks/useChangeRecords';
 import { toast } from '@/hooks/use-toast';
 
 export const Dashboard = () => {
-  const [competitors, setCompetitors] = useState<Competitor[]>([
-    {
-      id: '1',
-      name: 'TechRival Corp',
-      url: 'https://techrival.com',
-      status: 'active',
-      lastChecked: new Date(Date.now() - 3600000), // 1 hour ago
-      changesDetected: 3,
-      addedAt: new Date(Date.now() - 86400000), // 1 day ago
-    },
-    {
-      id: '2',
-      name: 'CompeteNow',
-      url: 'https://competenow.io',
-      status: 'active',
-      lastChecked: new Date(Date.now() - 7200000), // 2 hours ago
-      changesDetected: 1,
-      addedAt: new Date(Date.now() - 172800000), // 2 days ago
-    }
-  ]);
+  const { 
+    competitors, 
+    isLoading: competitorsLoading, 
+    addCompetitor, 
+    updateCompetitor, 
+    removeCompetitor 
+  } = useCompetitors();
+  
+  const { changes, subscribeToChanges } = useChangeRecords();
 
-  const [changes, setChanges] = useState<ChangeRecord[]>([
-    {
-      id: '1',
-      competitorId: '1',
-      competitorName: 'TechRival Corp',
-      changeType: 'content',
-      description: 'New pricing page added with updated subscription tiers',
-      detectedAt: new Date(Date.now() - 1800000), // 30 minutes ago
-      severity: 'high'
-    },
-    {
-      id: '2',
-      competitorId: '1',
-      competitorName: 'TechRival Corp',
-      changeType: 'design',
-      description: 'Homepage hero section redesigned with new call-to-action',
-      detectedAt: new Date(Date.now() - 3600000), // 1 hour ago
-      severity: 'medium'
-    },
-    {
-      id: '3',
-      competitorId: '2',
-      competitorName: 'CompeteNow',
-      changeType: 'structure',
-      description: 'Navigation menu restructured with new product categories',
-      detectedAt: new Date(Date.now() - 7200000), // 2 hours ago
-      severity: 'low'
-    }
-  ]);
+  // Set up real-time subscriptions
+  useEffect(() => {
+    const unsubscribe = subscribeToChanges();
+    return unsubscribe;
+  }, [subscribeToChanges]);
 
-  const handleAddCompetitor = (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {
-    const competitor: Competitor = {
-      ...newCompetitor,
-      id: Date.now().toString(),
-      addedAt: new Date()
-    };
-    
-    setCompetitors(prev => [...prev, competitor]);
-    toast({
-      title: "Competitor added",
-      description: `${competitor.name} is now being tracked.`,
+  const handleAddCompetitor = (newCompetitor: any) => {
+    addCompetitor({
+      name: newCompetitor.name,
+      url: newCompetitor.url,
+      status: 'active',
+      lastChecked: new Date(),
+      changesDetected: 0,
     });
   };
 
   const handleCheckChanges = async (id: string) => {
-    // Update competitor status to checking
-    setCompetitors(prev => 
-      prev.map(comp => 
-        comp.id === id ? { ...comp, status: 'checking' as const } : comp
-      )
-    );
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Simulate random change detection
-    const hasChanges = Math.random() > 0.5;
     const competitor = competitors.find(c => c.id === id);
-    
-    if (hasChanges && competitor) {
-      const newChange: ChangeRecord = {
-        id: Date.now().toString(),
-        competitorId: id,
-        competitorName: competitor.name,
-        changeType: ['content', 'design', 'structure'][Math.floor(Math.random() * 3)] as ChangeRecord['changeType'],
-        description: 'Automated change detection found updates to the website',
-        detectedAt: new Date(),
-        severity: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as ChangeRecord['severity']
-      };
+    if (!competitor) return;
+
+    // Update status to checking
+    updateCompetitor({ 
+      id, 
+      updates: { status: 'checking' }
+    });
+
+    // Simulate monitoring process (will be replaced with real Edge Function)
+    setTimeout(() => {
+      const hasChanges = Math.random() > 0.5;
       
-      setChanges(prev => [newChange, ...prev]);
-      
-      setCompetitors(prev => 
-        prev.map(comp => 
-          comp.id === id ? { 
-            ...comp, 
-            status: 'active' as const,
+      if (hasChanges) {
+        updateCompetitor({ 
+          id, 
+          updates: { 
+            status: 'active',
             lastChecked: new Date(),
-            changesDetected: comp.changesDetected + 1
-          } : comp
-        )
-      );
-      
-      toast({
-        title: "Changes detected!",
-        description: `New changes found on ${competitor.name}`,
-      });
-    } else {
-      setCompetitors(prev => 
-        prev.map(comp => 
-          comp.id === id ? { 
-            ...comp, 
-            status: 'active' as const,
+            changesDetected: competitor.changesDetected + 1
+          }
+        });
+        
+        toast({
+          title: "Changes detected!",
+          description: `New changes found on ${competitor.name}`,
+        });
+      } else {
+        updateCompetitor({ 
+          id, 
+          updates: { 
+            status: 'active',
             lastChecked: new Date()
-          } : comp
-        )
-      );
-      
-      toast({
-        title: "No changes found",
-        description: `${competitor?.name} appears unchanged.`,
-      });
-    }
+          }
+        });
+        
+        toast({
+          title: "No changes found",
+          description: `${competitor.name} appears unchanged.`,
+        });
+      }
+    }, 2000);
   };
 
   const handleRemoveCompetitor = (id: string) => {
-    const competitor = competitors.find(c => c.id === id);
-    setCompetitors(prev => prev.filter(comp => comp.id !== id));
-    setChanges(prev => prev.filter(change => change.competitorId !== id));
-    
-    toast({
-      title: "Competitor removed",
-      description: `${competitor?.name} is no longer being tracked.`,
-    });
+    removeCompetitor(id);
   };
+
+  if (competitorsLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const activeChecks = competitors.filter(c => c.status === 'checking').length;
   const recentChanges = changes.filter(c => 

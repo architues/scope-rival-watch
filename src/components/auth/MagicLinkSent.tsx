@@ -9,7 +9,7 @@ interface MagicLinkSentProps {
   onSimulateLogin: () => void;
 }
 
-export const MagicLinkSent = ({ email, onBack, onSimulateLogin }: MagicLinkSentProps) => {
+export const MagicLinkSent = ({ email, onBack }: MagicLinkSentProps) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-md">
@@ -30,14 +30,6 @@ export const MagicLinkSent = ({ email, onBack, onSimulateLogin }: MagicLinkSentP
               Click the link in your email to sign in instantly. The link will expire in 15 minutes.
             </p>
           </div>
-          
-          {/* Demo purposes - simulate login */}
-          <Button 
-            onClick={onSimulateLogin}
-            className="w-full bg-green-600 hover:bg-green-700"
-          >
-            Simulate Login (Demo)
-          </Button>
           
           <Button 
             variant="outline" 
