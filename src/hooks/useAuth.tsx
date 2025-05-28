@@ -8,7 +8,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string) => Promise<{ error?: string }>;
+  signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 }
 
@@ -48,20 +49,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string) => {
+  const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
       console.log('Attempting to sign in with email:', email);
       
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        options: {
-          emailRedirectTo: `${window.location.origin}`,
-        },
+        password,
       });
 
       if (error) {
-        console.error('Auth error:', error);
+        console.error('Sign in error:', error);
         toast({
           title: "Error",
           description: error.message,
@@ -70,15 +69,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: error.message };
       }
 
-      console.log('Magic link sent successfully');
-      toast({
-        title: "Magic link sent!",
-        description: "Check your email for the login link.",
-      });
-
+      console.log('Sign in successful');
       return {};
     } catch (error) {
       console.error('Sign in error:', error);
+      const errorMessage = 'An unexpected error occurred';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return { error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUp = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      console.log('Attempting to sign up with email:', email);
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Sign up error:', error);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error: error.message };
+      }
+
+      console.log('Sign up successful');
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account.",
+      });
+      return {};
+    } catch (error) {
+      console.error('Sign up error:', error);
       const errorMessage = 'An unexpected error occurred';
       toast({
         title: "Error",
@@ -109,7 +143,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
