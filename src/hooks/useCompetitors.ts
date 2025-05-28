@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Competitor } from '@/types/competitor';
@@ -9,15 +8,17 @@ export const useCompetitors = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  console.log('useCompetitors: user state', user ? `User ID: ${user.id}` : 'No user');
+
   const { data: competitors = [], isLoading, error } = useQuery({
     queryKey: ['competitors', user?.id],
     queryFn: async () => {
       if (!user) {
-        console.log('No user found, returning empty array');
+        console.log('useCompetitors: No user found, returning empty array');
         return [];
       }
       
-      console.log('Fetching competitors for user:', user.id);
+      console.log('useCompetitors: Fetching competitors for user:', user.id);
       
       try {
         const { data, error } = await supabase
@@ -27,11 +28,11 @@ export const useCompetitors = () => {
           .order('added_at', { ascending: false });
 
         if (error) {
-          console.error('Error fetching competitors:', error);
+          console.error('useCompetitors: Error fetching competitors:', error);
           throw error;
         }
 
-        console.log('Fetched competitors:', data);
+        console.log('useCompetitors: Fetched competitors:', data);
         
         return data.map((comp): Competitor => ({
           id: comp.id,
@@ -43,12 +44,14 @@ export const useCompetitors = () => {
           addedAt: new Date(comp.added_at),
         }));
       } catch (error) {
-        console.error('Error in competitors query:', error);
+        console.error('useCompetitors: Error in competitors query:', error);
         throw error;
       }
     },
     enabled: !!user,
   });
+
+  console.log('useCompetitors: Current state - competitors:', competitors.length, 'isLoading:', isLoading, 'error:', error);
 
   const addCompetitorMutation = useMutation({
     mutationFn: async (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {

@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { Users } from 'lucide-react';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
@@ -23,9 +22,15 @@ export const Dashboard = () => {
   
   const { changes, subscribeToChanges } = useChangeRecords();
 
+  console.log('Dashboard: Rendering with user:', user ? `ID: ${user.id}` : 'No user');
+  console.log('Dashboard: Competitors loading:', competitorsLoading);
+  console.log('Dashboard: Competitors count:', competitors.length);
+  console.log('Dashboard: Error:', competitorsError);
+
   // Set up real-time subscriptions
   useEffect(() => {
     if (user) {
+      console.log('Dashboard: Setting up real-time subscriptions for user:', user.id);
       const unsubscribe = subscribeToChanges();
       return unsubscribe;
     }
@@ -34,7 +39,7 @@ export const Dashboard = () => {
   // Handle errors
   useEffect(() => {
     if (competitorsError) {
-      console.error('Competitors error:', competitorsError);
+      console.error('Dashboard: Competitors error:', competitorsError);
       toast({
         title: "Error loading competitors",
         description: "Please try refreshing the page.",
@@ -45,6 +50,7 @@ export const Dashboard = () => {
 
   // Show loading state if user is not loaded or competitors are loading
   if (!user || competitorsLoading) {
+    console.log('Dashboard: Showing loading state - user:', !!user, 'competitorsLoading:', competitorsLoading);
     return (
       <div className="bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -122,6 +128,8 @@ export const Dashboard = () => {
   const recentChanges = changes.filter(c => 
     new Date(c.detectedAt).getTime() > Date.now() - 86400000 // 24 hours
   ).length;
+
+  console.log('Dashboard: Rendering main content with', competitors.length, 'competitors');
 
   return (
     <div className="bg-gray-50 min-h-screen">
