@@ -18,28 +18,28 @@ export const useCompetitors = () => {
         return [];
       }
       
-      console.log('useCompetitors: Starting simplified query for user:', user.id);
+      console.log('useCompetitors: Starting query for user:', user.id);
       
       try {
-        console.log('useCompetitors: Testing basic Supabase connection...');
+        // First, let's check what competitors exist in the database
+        console.log('useCompetitors: Checking all competitors in database...');
+        const { data: allCompetitors, error: allError } = await supabase
+          .from('competitors')
+          .select('*');
         
-        // Test basic connection first
-        const connectionTest = await supabase.from('competitors').select('count');
-        console.log('useCompetitors: Connection test result:', connectionTest);
+        console.log('useCompetitors: All competitors in database:', allCompetitors);
+        console.log('useCompetitors: All competitors error:', allError);
         
-        console.log('useCompetitors: Executing main query...');
-        const startTime = Date.now();
-        
+        // Now fetch user's specific competitors
+        console.log('useCompetitors: Fetching competitors for user:', user.id);
         const { data, error } = await supabase
           .from('competitors')
           .select('*')
           .eq('user_id', user.id)
           .order('added_at', { ascending: false });
 
-        const endTime = Date.now();
-        console.log(`useCompetitors: Query completed in ${endTime - startTime}ms`);
-        console.log('useCompetitors: Raw data:', data);
-        console.log('useCompetitors: Error:', error);
+        console.log('useCompetitors: User-specific query result:', data);
+        console.log('useCompetitors: User-specific query error:', error);
 
         if (error) {
           console.error('useCompetitors: Supabase error:', error);
@@ -61,15 +61,13 @@ export const useCompetitors = () => {
         
       } catch (fetchError) {
         console.error('useCompetitors: Fetch error details:', fetchError);
-        console.error('useCompetitors: Error name:', fetchError?.name);
-        console.error('useCompetitors: Error message:', fetchError?.message);
         throw fetchError;
       }
     },
     enabled: !!user,
     retry: 1,
-    staleTime: 30000, // Cache for 30 seconds
-    gcTime: 300000, // Keep in cache for 5 minutes
+    staleTime: 30000,
+    gcTime: 300000,
   });
 
   console.log('useCompetitors: Final state - competitors count:', competitors.length, 'isLoading:', isLoading, 'error:', error?.message || 'none');
