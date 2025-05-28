@@ -21,53 +21,72 @@ export const useCompetitors = () => {
       console.log('useCompetitors: Fetching competitors for user:', user.id);
       console.log('useCompetitors: RLS is currently DISABLED for testing');
       
-      try {
-        console.log('useCompetitors: Executing query...');
-        const { data, error } = await supabase
-          .from('competitors')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('added_at', { ascending: false });
+      // Create a promise that will timeout after 5 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Query timeout after 5 seconds'));
+        }, 5000);
+      });
 
-        console.log('useCompetitors: Supabase response received - data:', data, 'error:', error);
+      // Create the actual query promise
+      const queryPromise = (async () => {
+        try {
+          console.log('useCompetitors: About to execute Supabase query...');
+          
+          const queryStart = Date.now();
+          const { data, error } = await supabase
+            .from('competitors')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('added_at', { ascending: false });
 
-        if (error) {
-          console.error('useCompetitors: Supabase error details:', error);
-          console.error('useCompetitors: Error code:', error.code);
-          console.error('useCompetitors: Error message:', error.message);
-          console.error('useCompetitors: Error details:', error.details);
-          console.error('useCompetitors: Error hint:', error.hint);
-          throw error;
+          const queryEnd = Date.now();
+          console.log(`useCompetitors: Query completed in ${queryEnd - queryStart}ms`);
+
+          console.log('useCompetitors: Supabase response received - data:', data, 'error:', error);
+
+          if (error) {
+            console.error('useCompetitors: Supabase error details:', error);
+            console.error('useCompetitors: Error code:', error.code);
+            console.error('useCompetitors: Error message:', error.message);
+            console.error('useCompetitors: Error details:', error.details);
+            console.error('useCompetitors: Error hint:', error.hint);
+            throw error;
+          }
+
+          console.log('useCompetitors: Raw data from Supabase:', data);
+          
+          const mappedCompetitors = (data || []).map((comp): Competitor => ({
+            id: comp.id,
+            name: comp.name,
+            url: comp.url,
+            status: comp.status as 'active' | 'checking' | 'error',
+            lastChecked: comp.last_checked ? new Date(comp.last_checked) : new Date(),
+            changesDetected: comp.changes_detected || 0,
+            addedAt: new Date(comp.added_at),
+          }));
+
+          console.log('useCompetitors: Mapped competitors:', mappedCompetitors);
+          console.log('useCompetitors: SUCCESS - Query completed without timeout!');
+          return mappedCompetitors;
+        } catch (fetchError) {
+          console.error('useCompetitors: Fetch error caught:', fetchError);
+          throw fetchError;
         }
+      })();
 
-        console.log('useCompetitors: Raw data from Supabase:', data);
-        
-        const mappedCompetitors = (data || []).map((comp): Competitor => ({
-          id: comp.id,
-          name: comp.name,
-          url: comp.url,
-          status: comp.status as 'active' | 'checking' | 'error',
-          lastChecked: comp.last_checked ? new Date(comp.last_checked) : new Date(),
-          changesDetected: comp.changes_detected || 0,
-          addedAt: new Date(comp.added_at),
-        }));
-
-        console.log('useCompetitors: Mapped competitors:', mappedCompetitors);
-        console.log('useCompetitors: SUCCESS - Query completed without timeout!');
-        return mappedCompetitors;
-      } catch (fetchError) {
-        console.error('useCompetitors: Fetch error caught:', fetchError);
-        throw fetchError;
+      // Race the query against the timeout
+      try {
+        return await Promise.race([queryPromise, timeoutPromise]);
+      } catch (error) {
+        console.error('useCompetitors: Promise race failed:', error);
+        throw error;
       }
     },
     enabled: !!user,
-    retry: (failureCount, error) => {
-      console.log('useCompetitors: Query retry attempt', failureCount, error);
-      return failureCount < 1; // Only retry once
-    },
-    retryDelay: 2000,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: false, // Disable retries for now to see the raw error
+    staleTime: 0, // Force fresh queries
+    gcTime: 0, // Don't cache
   });
 
   console.log('useCompetitors: Query state - competitors:', competitors?.length || 0, 'isLoading:', isLoading, 'error:', error?.message || 'none');
