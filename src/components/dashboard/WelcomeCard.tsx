@@ -27,9 +27,11 @@ export const WelcomeCard = () => {
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white" />
-              </div>
+              <img 
+                src="/lovable-uploads/3f60d4c0-19b0-4059-b970-719a9bdafe92.png" 
+                alt="ScopeRival Logo"
+                className="h-12 w-auto"
+              />
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">ScopeRival</h2>
                 <p className="text-gray-500">Competitive Intelligence Platform</p>

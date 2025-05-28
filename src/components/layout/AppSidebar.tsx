@@ -41,9 +41,11 @@ export const AppSidebar = () => {
     <Sidebar className="sidebar-blur">
       <SidebarHeader className="p-6 border-b border-white/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-            <Zap className="h-5 w-5 text-white" />
-          </div>
+          <img 
+            src="/lovable-uploads/3f60d4c0-19b0-4059-b970-719a9bdafe92.png" 
+            alt="ScopeRival Logo"
+            className="h-10 w-auto"
+          />
           <div>
             <h1 className="text-lg font-bold text-gray-900">ScopeRival</h1>
             <p className="text-xs text-gray-500">Competitor Intelligence</p>

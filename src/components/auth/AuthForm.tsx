@@ -38,8 +38,12 @@ export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
       <div className="w-full max-w-md">
         {/* Logo and Welcome */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 gradient-primary rounded-2xl mb-6">
-            <Zap className="h-8 w-8 text-white" />
+          <div className="inline-flex items-center justify-center mb-6">
+            <img 
+              src="/lovable-uploads/3f60d4c0-19b0-4059-b970-719a9bdafe92.png" 
+              alt="ScopeRival Logo"
+              className="h-20 w-auto"
+            />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to ScopeRival</h1>
           <p className="text-gray-600">Track your competitors and stay ahead of the game</p>
