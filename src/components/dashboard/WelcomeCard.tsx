@@ -37,7 +37,7 @@ export const WelcomeCard = () => {
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center justify-center">
                 <img 
-                  src="/lovable-uploads/276928ab-c84a-4e27-9662-471d2c134953.png" 
+                  src="/lovable-uploads/ace15847-865a-418d-b021-effaf5f07ca8.png" 
                   alt="ScopeRival Logo"
                   className="h-12 w-auto"
                   onError={handleImageError}
