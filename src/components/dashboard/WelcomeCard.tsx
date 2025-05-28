@@ -22,7 +22,11 @@ export const WelcomeCard = () => {
   ];
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
     e.currentTarget.style.display = 'none';
+    if (fallback) {
+      fallback.style.display = 'flex';
+    }
   };
 
   return (
@@ -33,12 +37,12 @@ export const WelcomeCard = () => {
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center justify-center">
                 <img 
-                  src="/lovable-uploads/3f60d4c0-19b0-4059-b970-719a9bdafe92.png" 
+                  src="/lovable-uploads/276928ab-c84a-4e27-9662-471d2c134953.png" 
                   alt="ScopeRival Logo"
                   className="h-12 w-auto"
                   onError={handleImageError}
                 />
-                <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-white font-bold text-xl" style={{display: 'none'}} id="logo-fallback">
+                <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-white font-bold text-xl" style={{display: 'none'}}>
                   SR
                 </div>
               </div>

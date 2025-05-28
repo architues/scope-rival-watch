@@ -51,12 +51,12 @@ export const AppSidebar = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center">
             <img 
-              src="/lovable-uploads/3f60d4c0-19b0-4059-b970-719a9bdafe92.png" 
+              src="/lovable-uploads/276928ab-c84a-4e27-9662-471d2c134953.png" 
               alt="ScopeRival Logo"
               className="h-10 w-auto"
               onError={handleImageError}
             />
-            <div className="w-10 h-10 gradient-primary rounded-lg items-center justify-center text-white font-bold text-sm" style={{display: 'none'}}>
+            <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{display: 'none'}}>
               SR
             </div>
           </div>
