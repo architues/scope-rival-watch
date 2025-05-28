@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
 export const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { 
     competitors, 
     isLoading: competitorsLoading, 
@@ -23,41 +23,90 @@ export const Dashboard = () => {
   const { changes, subscribeToChanges } = useChangeRecords();
 
   console.log('Dashboard: Rendering with user:', user ? `ID: ${user.id}` : 'No user');
+  console.log('Dashboard: Auth loading:', authLoading);
   console.log('Dashboard: Competitors loading:', competitorsLoading);
   console.log('Dashboard: Competitors count:', competitors.length);
   console.log('Dashboard: Error:', competitorsError);
 
   // Set up real-time subscriptions
   useEffect(() => {
-    if (user) {
+    if (user && !authLoading) {
       console.log('Dashboard: Setting up real-time subscriptions for user:', user.id);
-      const unsubscribe = subscribeToChanges();
-      return unsubscribe;
+      try {
+        const unsubscribe = subscribeToChanges();
+        return unsubscribe;
+      } catch (error) {
+        console.error('Dashboard: Error setting up real-time subscriptions:', error);
+      }
     }
-  }, [subscribeToChanges, user]);
+  }, [subscribeToChanges, user, authLoading]);
 
-  // Handle errors
+  // Handle errors with more specific messaging
   useEffect(() => {
     if (competitorsError) {
       console.error('Dashboard: Competitors error:', competitorsError);
+      
+      let errorMessage = "Please try refreshing the page.";
+      
+      if (competitorsError.message?.includes('timeout')) {
+        errorMessage = "Request timed out. Please check your internet connection.";
+      } else if (competitorsError.message?.includes('401') || competitorsError.message?.includes('403')) {
+        errorMessage = "Authentication error. Please try signing out and back in.";
+      } else if (competitorsError.message?.includes('network')) {
+        errorMessage = "Network error. Please check your internet connection.";
+      }
+      
       toast({
         title: "Error loading competitors",
-        description: "Please try refreshing the page.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
   }, [competitorsError]);
 
-  // Show loading state if user is not loaded or competitors are loading
-  if (!user || competitorsLoading) {
-    console.log('Dashboard: Showing loading state - user:', !!user, 'competitorsLoading:', competitorsLoading);
+  // Show loading state if auth is loading or user is not loaded or competitors are loading
+  if (authLoading || !user || competitorsLoading) {
+    console.log('Dashboard: Showing loading state - authLoading:', authLoading, 'user:', !!user, 'competitorsLoading:', competitorsLoading);
     return (
       <div className="bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-gray-600">Loading dashboard...</p>
+              <p className="text-gray-600">
+                {authLoading ? 'Authenticating...' : 
+                 !user ? 'Loading user...' : 
+                 'Loading dashboard...'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there's a persistent error
+  if (competitorsError && !competitorsLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <Users className="h-8 w-8 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load dashboard</h3>
+              <p className="text-gray-600 mb-4">
+                {competitorsError.message?.includes('timeout') 
+                  ? 'The request timed out. Please check your internet connection.' 
+                  : 'There was an error loading your data. Please try again.'}
+              </p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+              >
+                Retry
+              </button>
             </div>
           </div>
         </div>

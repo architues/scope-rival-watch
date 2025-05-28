@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Competitor } from '@/types/competitor';
@@ -21,14 +22,27 @@ export const useCompetitors = () => {
       console.log('useCompetitors: Fetching competitors for user:', user.id);
       
       try {
+        // Add a timeout to the request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
         const { data, error } = await supabase
           .from('competitors')
           .select('*')
           .eq('user_id', user.id)
-          .order('added_at', { ascending: false });
+          .order('added_at', { ascending: false })
+          .abortSignal(controller.signal);
+
+        clearTimeout(timeoutId);
 
         if (error) {
           console.error('useCompetitors: Error fetching competitors:', error);
+          console.error('useCompetitors: Error details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
           throw error;
         }
 
@@ -45,10 +59,25 @@ export const useCompetitors = () => {
         }));
       } catch (error) {
         console.error('useCompetitors: Error in competitors query:', error);
+        
+        // Check if it's an abort error
+        if (error.name === 'AbortError') {
+          console.error('useCompetitors: Request timed out');
+          throw new Error('Request timed out. Please check your internet connection.');
+        }
+        
         throw error;
       }
     },
     enabled: !!user,
+    retry: (failureCount, error) => {
+      // Don't retry on authentication errors
+      if (error?.message?.includes('401') || error?.message?.includes('403')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   console.log('useCompetitors: Current state - competitors:', competitors.length, 'isLoading:', isLoading, 'error:', error);
