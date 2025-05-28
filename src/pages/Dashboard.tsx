@@ -88,7 +88,11 @@ export const Dashboard = () => {
       return;
     }
 
-    await checkCompetitorChanges(competitor, updateCompetitor);
+    const wrappedUpdateCompetitor = (id: string, updates: Partial<Competitor>) => {
+      updateCompetitor({ id, updates });
+    };
+
+    await checkCompetitorChanges(competitor, wrappedUpdateCompetitor);
   };
 
   const handleRemoveCompetitor = (id: string) => {
