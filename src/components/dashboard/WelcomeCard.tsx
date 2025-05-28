@@ -21,17 +21,27 @@ export const WelcomeCard = () => {
     }
   ];
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.style.display = 'none';
+  };
+
   return (
     <Card className="glass-card border-0 mb-8">
       <CardContent className="p-8">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img 
-                src="/lovable-uploads/3f60d4c0-19b0-4059-b970-719a9bdafe92.png" 
-                alt="ScopeRival Logo"
-                className="h-12 w-auto"
-              />
+              <div className="flex items-center justify-center">
+                <img 
+                  src="/lovable-uploads/3f60d4c0-19b0-4059-b970-719a9bdafe92.png" 
+                  alt="ScopeRival Logo"
+                  className="h-12 w-auto"
+                  onError={handleImageError}
+                />
+                <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-white font-bold text-xl" style={{display: 'none'}} id="logo-fallback">
+                  SR
+                </div>
+              </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">ScopeRival</h2>
                 <p className="text-gray-500">Competitive Intelligence Platform</p>

@@ -37,15 +37,29 @@ const menuItems = [
 ];
 
 export const AppSidebar = () => {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+    e.currentTarget.style.display = 'none';
+    if (fallback) {
+      fallback.style.display = 'flex';
+    }
+  };
+
   return (
     <Sidebar className="sidebar-blur">
       <SidebarHeader className="p-6 border-b border-white/20">
         <div className="flex items-center gap-3">
-          <img 
-            src="/lovable-uploads/3f60d4c0-19b0-4059-b970-719a9bdafe92.png" 
-            alt="ScopeRival Logo"
-            className="h-10 w-auto"
-          />
+          <div className="flex items-center justify-center">
+            <img 
+              src="/lovable-uploads/3f60d4c0-19b0-4059-b970-719a9bdafe92.png" 
+              alt="ScopeRival Logo"
+              className="h-10 w-auto"
+              onError={handleImageError}
+            />
+            <div className="w-10 h-10 gradient-primary rounded-lg items-center justify-center text-white font-bold text-sm" style={{display: 'none'}}>
+              SR
+            </div>
+          </div>
           <div>
             <h1 className="text-lg font-bold text-gray-900">ScopeRival</h1>
             <p className="text-xs text-gray-500">Competitor Intelligence</p>
