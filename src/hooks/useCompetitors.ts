@@ -19,6 +19,7 @@ export const useCompetitors = () => {
       }
       
       console.log('useCompetitors: Fetching competitors for user:', user.id);
+      console.log('useCompetitors: RLS is currently DISABLED for testing');
       
       try {
         console.log('useCompetitors: Executing query...');
@@ -52,6 +53,7 @@ export const useCompetitors = () => {
         }));
 
         console.log('useCompetitors: Mapped competitors:', mappedCompetitors);
+        console.log('useCompetitors: SUCCESS - Query completed without timeout!');
         return mappedCompetitors;
       } catch (fetchError) {
         console.error('useCompetitors: Fetch error caught:', fetchError);
