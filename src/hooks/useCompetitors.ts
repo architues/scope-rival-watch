@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Competitor } from '@/types/competitor';
@@ -22,11 +21,18 @@ export const useCompetitors = () => {
       console.log('useCompetitors: Fetching competitors for user:', user.id);
       
       try {
-        const { data, error } = await supabase
+        // Add a timeout promise to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Query timeout after 10 seconds')), 10000);
+        });
+
+        const queryPromise = supabase
           .from('competitors')
           .select('*')
           .eq('user_id', user.id)
           .order('added_at', { ascending: false });
+
+        const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
         console.log('useCompetitors: Supabase response received - data:', data, 'error:', error);
 
