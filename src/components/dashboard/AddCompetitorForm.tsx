@@ -17,26 +17,38 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !url) return;
+    if (!name.trim() || !url.trim()) {
+      console.log('AddCompetitorForm: Form validation failed - missing name or url');
+      return;
+    }
 
+    console.log('AddCompetitorForm: Submitting competitor', { name, url });
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const competitor: Omit<Competitor, 'id' | 'addedAt'> = {
-      name,
-      url: url.startsWith('http') ? url : `https://${url}`,
-      status: 'active',
-      lastChecked: new Date(),
-      changesDetected: 0
-    };
+    try {
+      // Format URL properly
+      const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+      
+      const competitor: Omit<Competitor, 'id' | 'addedAt'> = {
+        name: name.trim(),
+        url: formattedUrl,
+        status: 'active',
+        lastChecked: new Date(),
+        changesDetected: 0
+      };
 
-    onAddCompetitor(competitor);
-    
-    setName('');
-    setUrl('');
-    setIsLoading(false);
+      console.log('AddCompetitorForm: Calling onAddCompetitor with:', competitor);
+      onAddCompetitor(competitor);
+      
+      // Reset form
+      setName('');
+      setUrl('');
+      console.log('AddCompetitorForm: Form reset after submission');
+    } catch (error) {
+      console.error('AddCompetitorForm: Error during submission:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -88,7 +100,7 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
         
         <Button 
           type="submit" 
-          disabled={isLoading}
+          disabled={isLoading || !name.trim() || !url.trim()}
           className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2"
         >
           {isLoading ? (

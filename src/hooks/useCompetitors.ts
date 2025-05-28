@@ -22,27 +22,14 @@ export const useCompetitors = () => {
       console.log('useCompetitors: Fetching competitors for user:', user.id);
       
       try {
-        // Add a timeout to the request
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
         const { data, error } = await supabase
           .from('competitors')
           .select('*')
           .eq('user_id', user.id)
-          .order('added_at', { ascending: false })
-          .abortSignal(controller.signal);
-
-        clearTimeout(timeoutId);
+          .order('added_at', { ascending: false });
 
         if (error) {
           console.error('useCompetitors: Error fetching competitors:', error);
-          console.error('useCompetitors: Error details:', {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code
-          });
           throw error;
         }
 
@@ -59,24 +46,11 @@ export const useCompetitors = () => {
         }));
       } catch (error) {
         console.error('useCompetitors: Error in competitors query:', error);
-        
-        // Check if it's an abort error
-        if (error.name === 'AbortError') {
-          console.error('useCompetitors: Request timed out');
-          throw new Error('Request timed out. Please check your internet connection.');
-        }
-        
         throw error;
       }
     },
     enabled: !!user,
-    retry: (failureCount, error) => {
-      // Don't retry on authentication errors
-      if (error?.message?.includes('401') || error?.message?.includes('403')) {
-        return false;
-      }
-      return failureCount < 3;
-    },
+    retry: 3,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
@@ -84,9 +58,12 @@ export const useCompetitors = () => {
 
   const addCompetitorMutation = useMutation({
     mutationFn: async (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        console.error('useCompetitors: User not authenticated');
+        throw new Error('User not authenticated');
+      }
 
-      console.log('Adding competitor for user:', user.id);
+      console.log('useCompetitors: Adding competitor for user:', user.id, newCompetitor);
 
       const { data, error } = await supabase
         .from('competitors')
@@ -102,14 +79,15 @@ export const useCompetitors = () => {
         .single();
 
       if (error) {
-        console.error('Error adding competitor:', error);
+        console.error('useCompetitors: Error adding competitor:', error);
         throw error;
       }
       
-      console.log('Successfully added competitor:', data);
+      console.log('useCompetitors: Successfully added competitor:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('useCompetitors: Add competitor mutation succeeded:', data);
       queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
       toast({
         title: "Competitor added",
@@ -117,10 +95,10 @@ export const useCompetitors = () => {
       });
     },
     onError: (error) => {
-      console.error('Error adding competitor:', error);
+      console.error('useCompetitors: Add competitor mutation failed:', error);
       toast({
         title: "Error",
-        description: "Failed to add competitor. Please try again.",
+        description: `Failed to add competitor: ${error.message}`,
         variant: "destructive",
       });
     },
@@ -128,6 +106,8 @@ export const useCompetitors = () => {
 
   const updateCompetitorMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Competitor> }) => {
+      console.log('useCompetitors: Updating competitor:', id, updates);
+      
       const { error } = await supabase
         .from('competitors')
         .update({
@@ -137,24 +117,36 @@ export const useCompetitors = () => {
         })
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('useCompetitors: Error updating competitor:', error);
+        throw error;
+      }
+      
+      console.log('useCompetitors: Successfully updated competitor:', id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
     },
     onError: (error) => {
-      console.error('Error updating competitor:', error);
+      console.error('useCompetitors: Update competitor mutation failed:', error);
     },
   });
 
   const removeCompetitorMutation = useMutation({
     mutationFn: async (id: string) => {
+      console.log('useCompetitors: Removing competitor:', id);
+      
       const { error } = await supabase
         .from('competitors')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('useCompetitors: Error removing competitor:', error);
+        throw error;
+      }
+      
+      console.log('useCompetitors: Successfully removed competitor:', id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
@@ -164,10 +156,10 @@ export const useCompetitors = () => {
       });
     },
     onError: (error) => {
-      console.error('Error removing competitor:', error);
+      console.error('useCompetitors: Remove competitor mutation failed:', error);
       toast({
         title: "Error",
-        description: "Failed to remove competitor. Please try again.",
+        description: `Failed to remove competitor: ${error.message}`,
         variant: "destructive",
       });
     },

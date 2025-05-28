@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { Users } from 'lucide-react';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
@@ -8,6 +9,7 @@ import { useCompetitors } from '@/hooks/useCompetitors';
 import { useChangeRecords } from '@/hooks/useChangeRecords';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { Competitor } from '@/types/competitor';
 
 export const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -17,7 +19,8 @@ export const Dashboard = () => {
     error: competitorsError,
     addCompetitor, 
     updateCompetitor, 
-    removeCompetitor 
+    removeCompetitor,
+    isAddingCompetitor
   } = useCompetitors();
   
   const { changes, subscribeToChanges } = useChangeRecords();
@@ -27,6 +30,7 @@ export const Dashboard = () => {
   console.log('Dashboard: Competitors loading:', competitorsLoading);
   console.log('Dashboard: Competitors count:', competitors.length);
   console.log('Dashboard: Error:', competitorsError);
+  console.log('Dashboard: Is adding competitor:', isAddingCompetitor);
 
   // Set up real-time subscriptions
   useEffect(() => {
@@ -114,19 +118,18 @@ export const Dashboard = () => {
     );
   }
 
-  const handleAddCompetitor = (newCompetitor: any) => {
-    addCompetitor({
-      name: newCompetitor.name,
-      url: newCompetitor.url,
-      status: 'active',
-      lastChecked: new Date(),
-      changesDetected: 0,
-    });
+  const handleAddCompetitor = (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {
+    console.log('Dashboard: handleAddCompetitor called with:', newCompetitor);
+    addCompetitor(newCompetitor);
   };
 
   const handleCheckChanges = async (id: string) => {
+    console.log('Dashboard: handleCheckChanges called for competitor:', id);
     const competitor = competitors.find(c => c.id === id);
-    if (!competitor) return;
+    if (!competitor) {
+      console.error('Dashboard: Competitor not found:', id);
+      return;
+    }
 
     // Update status to checking
     updateCompetitor({ 
@@ -170,6 +173,7 @@ export const Dashboard = () => {
   };
 
   const handleRemoveCompetitor = (id: string) => {
+    console.log('Dashboard: handleRemoveCompetitor called for competitor:', id);
     removeCompetitor(id);
   };
 
