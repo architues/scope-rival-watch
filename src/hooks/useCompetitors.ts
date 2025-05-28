@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Competitor } from '@/types/competitor';
@@ -21,40 +20,43 @@ export const useCompetitors = () => {
       
       console.log('useCompetitors: Fetching competitors for user:', user.id);
       
-      try {
-        const { data, error } = await supabase
-          .from('competitors')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('added_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('competitors')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('added_at', { ascending: false });
 
-        if (error) {
-          console.error('useCompetitors: Error fetching competitors:', error);
-          throw error;
-        }
-
-        console.log('useCompetitors: Fetched competitors:', data);
-        
-        return data.map((comp): Competitor => ({
-          id: comp.id,
-          name: comp.name,
-          url: comp.url,
-          status: comp.status as 'active' | 'checking' | 'error',
-          lastChecked: comp.last_checked ? new Date(comp.last_checked) : new Date(),
-          changesDetected: comp.changes_detected || 0,
-          addedAt: new Date(comp.added_at),
-        }));
-      } catch (error) {
-        console.error('useCompetitors: Error in competitors query:', error);
-        throw error;
+      if (error) {
+        console.error('useCompetitors: Supabase error:', error);
+        throw new Error(`Failed to fetch competitors: ${error.message}`);
       }
+
+      console.log('useCompetitors: Raw data from Supabase:', data);
+      
+      const mappedCompetitors = (data || []).map((comp): Competitor => ({
+        id: comp.id,
+        name: comp.name,
+        url: comp.url,
+        status: comp.status as 'active' | 'checking' | 'error',
+        lastChecked: comp.last_checked ? new Date(comp.last_checked) : new Date(),
+        changesDetected: comp.changes_detected || 0,
+        addedAt: new Date(comp.added_at),
+      }));
+
+      console.log('useCompetitors: Mapped competitors:', mappedCompetitors);
+      return mappedCompetitors;
     },
     enabled: !!user,
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retry: (failureCount, error) => {
+      console.log('useCompetitors: Query retry attempt', failureCount, error);
+      return failureCount < 2; // Only retry twice
+    },
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 5000),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime in older versions)
   });
 
-  console.log('useCompetitors: Current state - competitors:', competitors.length, 'isLoading:', isLoading, 'error:', error);
+  console.log('useCompetitors: Query state - competitors:', competitors?.length || 0, 'isLoading:', isLoading, 'error:', error?.message || 'none');
 
   const addCompetitorMutation = useMutation({
     mutationFn: async (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {
