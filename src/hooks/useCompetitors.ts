@@ -21,43 +21,22 @@ export const useCompetitors = () => {
       console.log('useCompetitors: Fetching competitors for user:', user.id);
       
       try {
-        // Test Supabase connection first
-        console.log('useCompetitors: Testing Supabase connection...');
-        
-        // Simple health check query with shorter timeout
-        const healthCheck = new Promise((resolve, reject) => {
-          setTimeout(() => reject(new Error('Health check timeout after 5 seconds')), 5000);
-        });
-
-        const healthQuery = supabase.from('competitors').select('count').limit(1);
-        
-        try {
-          await Promise.race([healthQuery, healthCheck]);
-          console.log('useCompetitors: Supabase connection test passed');
-        } catch (healthError) {
-          console.error('useCompetitors: Supabase connection test failed:', healthError);
-          throw new Error('Cannot connect to database. Please check your internet connection.');
-        }
-
-        // Now attempt the actual query with timeout
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Query timeout after 10 seconds')), 10000);
-        });
-
-        const queryPromise = supabase
+        console.log('useCompetitors: Executing query...');
+        const { data, error } = await supabase
           .from('competitors')
           .select('*')
           .eq('user_id', user.id)
           .order('added_at', { ascending: false });
 
-        console.log('useCompetitors: Executing main query...');
-        const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
-
         console.log('useCompetitors: Supabase response received - data:', data, 'error:', error);
 
         if (error) {
-          console.error('useCompetitors: Supabase error:', error);
-          throw new Error(`Failed to fetch competitors: ${error.message}`);
+          console.error('useCompetitors: Supabase error details:', error);
+          console.error('useCompetitors: Error code:', error.code);
+          console.error('useCompetitors: Error message:', error.message);
+          console.error('useCompetitors: Error details:', error.details);
+          console.error('useCompetitors: Error hint:', error.hint);
+          throw error;
         }
 
         console.log('useCompetitors: Raw data from Supabase:', data);
@@ -76,27 +55,13 @@ export const useCompetitors = () => {
         return mappedCompetitors;
       } catch (fetchError) {
         console.error('useCompetitors: Fetch error caught:', fetchError);
-        
-        // More specific error handling
-        if (fetchError.message?.includes('timeout')) {
-          throw new Error('Connection timeout. Please check your internet connection and try again.');
-        } else if (fetchError.message?.includes('fetch')) {
-          throw new Error('Network error. Please check your internet connection.');
-        } else if (fetchError.message?.includes('CORS')) {
-          throw new Error('CORS error. Please refresh the page and try again.');
-        }
-        
         throw fetchError;
       }
     },
     enabled: !!user,
     retry: (failureCount, error) => {
       console.log('useCompetitors: Query retry attempt', failureCount, error);
-      // Don't retry timeout errors as they indicate connection issues
-      if (error?.message?.includes('timeout')) {
-        return false;
-      }
-      return failureCount < 1; // Only retry once for other errors
+      return failureCount < 1; // Only retry once
     },
     retryDelay: 2000,
     staleTime: 5 * 60 * 1000, // 5 minutes
