@@ -18,78 +18,61 @@ export const useCompetitors = () => {
         return [];
       }
       
-      console.log('useCompetitors: Fetching competitors for user:', user.id);
-      console.log('useCompetitors: RLS is currently DISABLED for testing');
+      console.log('useCompetitors: Starting simplified query for user:', user.id);
       
-      // Create a promise that will timeout after 5 seconds
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('Query timeout after 5 seconds'));
-        }, 5000);
-      });
-
-      // Create the actual query promise
-      const queryPromise = (async (): Promise<Competitor[]> => {
-        try {
-          console.log('useCompetitors: About to execute Supabase query...');
-          
-          const queryStart = Date.now();
-          const { data, error } = await supabase
-            .from('competitors')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('added_at', { ascending: false });
-
-          const queryEnd = Date.now();
-          console.log(`useCompetitors: Query completed in ${queryEnd - queryStart}ms`);
-
-          console.log('useCompetitors: Supabase response received - data:', data, 'error:', error);
-
-          if (error) {
-            console.error('useCompetitors: Supabase error details:', error);
-            console.error('useCompetitors: Error code:', error.code);
-            console.error('useCompetitors: Error message:', error.message);
-            console.error('useCompetitors: Error details:', error.details);
-            console.error('useCompetitors: Error hint:', error.hint);
-            throw error;
-          }
-
-          console.log('useCompetitors: Raw data from Supabase:', data);
-          
-          const mappedCompetitors = (data || []).map((comp): Competitor => ({
-            id: comp.id,
-            name: comp.name,
-            url: comp.url,
-            status: comp.status as 'active' | 'checking' | 'error',
-            lastChecked: comp.last_checked ? new Date(comp.last_checked) : new Date(),
-            changesDetected: comp.changes_detected || 0,
-            addedAt: new Date(comp.added_at),
-          }));
-
-          console.log('useCompetitors: Mapped competitors:', mappedCompetitors);
-          console.log('useCompetitors: SUCCESS - Query completed without timeout!');
-          return mappedCompetitors;
-        } catch (fetchError) {
-          console.error('useCompetitors: Fetch error caught:', fetchError);
-          throw fetchError;
-        }
-      })();
-
-      // Race the query against the timeout
       try {
-        return await Promise.race([queryPromise, timeoutPromise]);
-      } catch (error) {
-        console.error('useCompetitors: Promise race failed:', error);
-        throw error;
+        console.log('useCompetitors: Testing basic Supabase connection...');
+        
+        // Test basic connection first
+        const connectionTest = await supabase.from('competitors').select('count');
+        console.log('useCompetitors: Connection test result:', connectionTest);
+        
+        console.log('useCompetitors: Executing main query...');
+        const startTime = Date.now();
+        
+        const { data, error } = await supabase
+          .from('competitors')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('added_at', { ascending: false });
+
+        const endTime = Date.now();
+        console.log(`useCompetitors: Query completed in ${endTime - startTime}ms`);
+        console.log('useCompetitors: Raw data:', data);
+        console.log('useCompetitors: Error:', error);
+
+        if (error) {
+          console.error('useCompetitors: Supabase error:', error);
+          throw error;
+        }
+
+        const mappedCompetitors = (data || []).map((comp): Competitor => ({
+          id: comp.id,
+          name: comp.name,
+          url: comp.url,
+          status: comp.status as 'active' | 'checking' | 'error',
+          lastChecked: comp.last_checked ? new Date(comp.last_checked) : new Date(),
+          changesDetected: comp.changes_detected || 0,
+          addedAt: new Date(comp.added_at),
+        }));
+
+        console.log('useCompetitors: Mapped competitors:', mappedCompetitors);
+        return mappedCompetitors;
+        
+      } catch (fetchError) {
+        console.error('useCompetitors: Fetch error details:', fetchError);
+        console.error('useCompetitors: Error name:', fetchError?.name);
+        console.error('useCompetitors: Error message:', fetchError?.message);
+        throw fetchError;
       }
     },
     enabled: !!user,
-    retry: false, // Disable retries for now to see the raw error
-    staleTime: 0, // Force fresh queries
-    gcTime: 0, // Don't cache
+    retry: 1,
+    staleTime: 30000, // Cache for 30 seconds
+    gcTime: 300000, // Keep in cache for 5 minutes
   });
 
-  console.log('useCompetitors: Query state - competitors:', competitors.length, 'isLoading:', isLoading, 'error:', error?.message || 'none');
+  console.log('useCompetitors: Final state - competitors count:', competitors.length, 'isLoading:', isLoading, 'error:', error?.message || 'none');
 
   const addCompetitorMutation = useMutation({
     mutationFn: async (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {
