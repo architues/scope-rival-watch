@@ -14,6 +14,30 @@ export const useCompetitors = () => {
     queryFn: async () => {
       if (!user) return [];
       
+      // First ensure the user profile exists
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile) {
+        console.log('User profile not found, creating...');
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: user.id,
+              email: user.email || '',
+              name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+            },
+          ]);
+        
+        if (profileError && profileError.code !== '23505') {
+          console.error('Error creating user profile:', profileError);
+        }
+      }
+
       const { data, error } = await supabase
         .from('competitors')
         .select('*')
