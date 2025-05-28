@@ -19,27 +19,33 @@ export const useCompetitors = () => {
       
       console.log('Fetching competitors for user:', user.id);
       
-      const { data, error } = await supabase
-        .from('competitors')
-        .select('*')
-        .order('added_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('competitors')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('added_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching competitors:', error);
+        if (error) {
+          console.error('Error fetching competitors:', error);
+          throw error;
+        }
+
+        console.log('Fetched competitors:', data);
+        
+        return data.map((comp): Competitor => ({
+          id: comp.id,
+          name: comp.name,
+          url: comp.url,
+          status: comp.status as 'active' | 'checking' | 'error',
+          lastChecked: comp.last_checked ? new Date(comp.last_checked) : new Date(),
+          changesDetected: comp.changes_detected || 0,
+          addedAt: new Date(comp.added_at),
+        }));
+      } catch (error) {
+        console.error('Error in competitors query:', error);
         throw error;
       }
-
-      console.log('Fetched competitors:', data);
-      
-      return data.map((comp): Competitor => ({
-        id: comp.id,
-        name: comp.name,
-        url: comp.url,
-        status: comp.status as 'active' | 'checking' | 'error',
-        lastChecked: comp.last_checked ? new Date(comp.last_checked) : new Date(),
-        changesDetected: comp.changes_detected || 0,
-        addedAt: new Date(comp.added_at),
-      }));
     },
     enabled: !!user,
   });

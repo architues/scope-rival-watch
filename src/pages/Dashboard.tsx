@@ -7,9 +7,11 @@ import { CompetitorCard } from '@/components/dashboard/CompetitorCard';
 import { ChangeHistoryTable } from '@/components/dashboard/ChangeHistoryTable';
 import { useCompetitors } from '@/hooks/useCompetitors';
 import { useChangeRecords } from '@/hooks/useChangeRecords';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
 export const Dashboard = () => {
+  const { user } = useAuth();
   const { 
     competitors, 
     isLoading: competitorsLoading, 
@@ -23,9 +25,11 @@ export const Dashboard = () => {
 
   // Set up real-time subscriptions
   useEffect(() => {
-    const unsubscribe = subscribeToChanges();
-    return unsubscribe;
-  }, [subscribeToChanges]);
+    if (user) {
+      const unsubscribe = subscribeToChanges();
+      return unsubscribe;
+    }
+  }, [subscribeToChanges, user]);
 
   // Handle errors
   useEffect(() => {
@@ -38,6 +42,22 @@ export const Dashboard = () => {
       });
     }
   }, [competitorsError]);
+
+  // Show loading state if user is not loaded or competitors are loading
+  if (!user || competitorsLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading dashboard...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleAddCompetitor = (newCompetitor: any) => {
     addCompetitor({
@@ -97,21 +117,6 @@ export const Dashboard = () => {
   const handleRemoveCompetitor = (id: string) => {
     removeCompetitor(id);
   };
-
-  if (competitorsLoading) {
-    return (
-      <div className="bg-gray-50 min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-gray-600">Loading dashboard...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const activeChecks = competitors.filter(c => c.status === 'checking').length;
   const recentChanges = changes.filter(c => 
