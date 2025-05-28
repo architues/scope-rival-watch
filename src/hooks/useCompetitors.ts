@@ -10,34 +10,15 @@ export const useCompetitors = () => {
   const queryClient = useQueryClient();
 
   const { data: competitors = [], isLoading, error } = useQuery({
-    queryKey: ['competitors'],
+    queryKey: ['competitors', user?.id],
     queryFn: async () => {
-      if (!user) return [];
-      
-      // First ensure the user profile exists
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile) {
-        console.log('User profile not found, creating...');
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: user.id,
-              email: user.email || '',
-              name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-            },
-          ]);
-        
-        if (profileError && profileError.code !== '23505') {
-          console.error('Error creating user profile:', profileError);
-        }
+      if (!user) {
+        console.log('No user found, returning empty array');
+        return [];
       }
-
+      
+      console.log('Fetching competitors for user:', user.id);
+      
       const { data, error } = await supabase
         .from('competitors')
         .select('*')
@@ -48,6 +29,8 @@ export const useCompetitors = () => {
         throw error;
       }
 
+      console.log('Fetched competitors:', data);
+      
       return data.map((comp): Competitor => ({
         id: comp.id,
         name: comp.name,
@@ -65,6 +48,8 @@ export const useCompetitors = () => {
     mutationFn: async (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {
       if (!user) throw new Error('User not authenticated');
 
+      console.log('Adding competitor for user:', user.id);
+
       const { data, error } = await supabase
         .from('competitors')
         .insert([{
@@ -78,11 +63,16 @@ export const useCompetitors = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding competitor:', error);
+        throw error;
+      }
+      
+      console.log('Successfully added competitor:', data);
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['competitors'] });
+      queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
       toast({
         title: "Competitor added",
         description: "Competitor is now being tracked.",
@@ -112,7 +102,7 @@ export const useCompetitors = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['competitors'] });
+      queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
     },
     onError: (error) => {
       console.error('Error updating competitor:', error);
@@ -129,7 +119,7 @@ export const useCompetitors = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['competitors'] });
+      queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
       toast({
         title: "Competitor removed",
         description: "Competitor is no longer being tracked.",

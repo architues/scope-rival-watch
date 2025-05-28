@@ -13,6 +13,7 @@ export const Dashboard = () => {
   const { 
     competitors, 
     isLoading: competitorsLoading, 
+    error: competitorsError,
     addCompetitor, 
     updateCompetitor, 
     removeCompetitor 
@@ -25,6 +26,18 @@ export const Dashboard = () => {
     const unsubscribe = subscribeToChanges();
     return unsubscribe;
   }, [subscribeToChanges]);
+
+  // Handle errors
+  useEffect(() => {
+    if (competitorsError) {
+      console.error('Competitors error:', competitorsError);
+      toast({
+        title: "Error loading competitors",
+        description: "Please try refreshing the page.",
+        variant: "destructive",
+      });
+    }
+  }, [competitorsError]);
 
   const handleAddCompetitor = (newCompetitor: any) => {
     addCompetitor({
