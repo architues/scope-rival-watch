@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
 
 interface AuthFormProps {
   onMagicLinkSent: (email: string) => void;
@@ -19,7 +17,7 @@ export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,22 +27,10 @@ export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
     
     try {
       if (isForgotPassword) {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-
-        if (error) {
-          toast({
-            title: "Error",
-            description: error.message,
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Password reset email sent",
-            description: "Check your email for a password reset link.",
-          });
+        const result = await resetPassword(email);
+        if (!result.error) {
           setIsForgotPassword(false);
+          onMagicLinkSent(email); // Show success message
         }
         return;
       }
@@ -54,14 +40,14 @@ export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
         result = await signIn(email, password);
       } else {
         result = await signUp(email, password);
+        // For sign up success, show the confirmation message
+        if (!result.error) {
+          onMagicLinkSent(email);
+        }
       }
       
       if (!result.error) {
         console.log(`${isLogin ? 'Sign in' : 'Sign up'} successful`);
-        // For sign up, we might want to show a different message
-        if (!isLogin) {
-          onMagicLinkSent(email); // Reusing this prop for success message
-        }
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -83,7 +69,7 @@ export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-6">
             <img 
-              src="/lovable-uploads/95b86c5c-2005-4fc8-80ba-e1c3e4e5dfea.png" 
+              src="/lovable-uploads/ace15847-865a-418d-b021-effaf5f07ca8.png" 
               alt="ScopeRival Logo"
               className="h-20 w-auto"
             />
