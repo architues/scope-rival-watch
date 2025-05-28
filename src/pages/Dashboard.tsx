@@ -100,10 +100,14 @@ export const Dashboard = () => {
 
   if (competitorsLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading dashboard...</p>
+      <div className="bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading dashboard...</p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -115,40 +119,44 @@ export const Dashboard = () => {
   ).length;
 
   return (
-    <div className="space-y-8">
-      <DashboardHeader 
-        totalCompetitors={competitors.length}
-        activeChecks={activeChecks}
-        recentChanges={recentChanges}
-      />
-      
-      <AddCompetitorForm onAddCompetitor={handleAddCompetitor} />
-      
-      <div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-6">Your Competitors</h3>
-        {competitors.length === 0 ? (
-          <div className="glass-card text-center py-16">
-            <div className="w-16 h-16 gradient-primary rounded-2xl mx-auto mb-4 flex items-center justify-center">
-              <Users className="h-8 w-8 text-white" />
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        <DashboardHeader 
+          totalCompetitors={competitors.length}
+          activeChecks={activeChecks}
+          recentChanges={recentChanges}
+        />
+        
+        <AddCompetitorForm onAddCompetitor={handleAddCompetitor} />
+        
+        <div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-6">Your Competitors</h3>
+          {competitors.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-center py-16 px-8">
+              <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                <Users className="h-8 w-8 text-gray-400" />
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Track your first competitor to get started</h4>
+              <p className="text-gray-600 max-w-md mx-auto">
+                Add a competitor above and we'll monitor their website for changes, sending you alerts when we detect updates to their content, design, or features.
+              </p>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">No competitors added yet</h4>
-            <p className="text-gray-500">Add your first competitor above to get started</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {competitors.map((competitor) => (
-              <CompetitorCard
-                key={competitor.id}
-                competitor={competitor}
-                onCheckChanges={handleCheckChanges}
-                onRemove={handleRemoveCompetitor}
-              />
-            ))}
-          </div>
-        )}
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {competitors.map((competitor) => (
+                <CompetitorCard
+                  key={competitor.id}
+                  competitor={competitor}
+                  onCheckChanges={handleCheckChanges}
+                  onRemove={handleRemoveCompetitor}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <ChangeHistoryTable changes={changes} />
       </div>
-      
-      <ChangeHistoryTable changes={changes} />
     </div>
   );
 };

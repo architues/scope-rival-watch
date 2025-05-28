@@ -14,26 +14,25 @@ interface LayoutProps {
 export const Layout = ({ children, user, onLogout }: LayoutProps) => {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen flex w-full bg-white">
         <AppSidebar />
         
         <SidebarInset className="flex-1">
           {/* Top Header */}
-          <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-white/20">
+          <header className="sticky top-0 z-40 bg-white border-b border-gray-200">
             <div className="flex h-16 items-center justify-between px-6">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="lg:hidden" />
-                <h2 className="text-xl font-semibold text-gray-900">Dashboard</h2>
               </div>
               
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" className="relative rounded-xl">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full"></span>
+                <Button variant="ghost" size="sm" className="relative">
+                  <Bell className="h-5 w-5 text-gray-600" />
+                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-purple-600 rounded-full"></span>
                 </Button>
                 
                 <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
                     <span className="text-white text-sm font-medium">
                       {user.name?.[0]?.toUpperCase() || 'U'}
                     </span>
@@ -46,7 +45,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
                     variant="ghost" 
                     size="sm" 
                     onClick={onLogout}
-                    className="flex items-center gap-2 hover:bg-red-50 hover:text-red-600 rounded-xl"
+                    className="flex items-center gap-2 hover:bg-red-50 hover:text-red-600"
                   >
                     <LogOut className="h-4 w-4" />
                   </Button>
@@ -56,7 +55,7 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
           </header>
           
           {/* Main Content */}
-          <main className="flex-1 p-6">
+          <main className="flex-1">
             {children}
           </main>
         </SidebarInset>

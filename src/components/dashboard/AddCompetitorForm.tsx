@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Globe, Sparkles } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Plus, Globe } from 'lucide-react';
 import { Competitor } from '@/types/competitor';
 
 interface AddCompetitorFormProps {
@@ -39,44 +40,44 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
   };
 
   return (
-    <div className="glass-card mb-8 animate-scale-in">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 gradient-secondary rounded-xl">
-          <Plus className="h-6 w-6 text-white" />
+        <div className="p-2 bg-purple-50 rounded-lg">
+          <Plus className="h-5 w-5 text-purple-600" />
         </div>
         <div>
-          <h2 className="text-xl font-bold font-jakarta">Add New Competitor</h2>
-          <p className="text-sm text-muted-foreground">Start tracking a new competitor website</p>
+          <h2 className="text-lg font-semibold text-gray-900">Add New Competitor</h2>
+          <p className="text-sm text-gray-600">Start tracking a new competitor website</p>
         </div>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium text-foreground">
+            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
               Competitor Name
-            </label>
+            </Label>
             <Input
               id="name"
               type="text"
               placeholder="e.g., Acme Corp"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-background/50 border-border/50 focus:border-primary/50 focus:bg-background/80 transition-all"
+              className="w-full"
               required
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="url" className="text-sm font-medium text-foreground">
+            <Label htmlFor="url" className="text-sm font-medium text-gray-700">
               Website URL
-            </label>
+            </Label>
             <div className="relative">
-              <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 id="url"
                 type="url"
                 placeholder="competitor.com"
-                className="pl-10 bg-background/50 border-border/50 focus:border-primary/50 focus:bg-background/80 transition-all"
+                className="pl-10 w-full"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 required
@@ -88,7 +89,7 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
         <Button 
           type="submit" 
           disabled={isLoading}
-          className="gradient-primary hover:opacity-90 transition-opacity font-medium px-8"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2"
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
@@ -97,7 +98,7 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
               Add Competitor
             </div>
           )}
