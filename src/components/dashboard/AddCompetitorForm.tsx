@@ -54,8 +54,8 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-purple-50 rounded-lg">
-          <Plus className="h-5 w-5 text-purple-600" />
+        <div className="p-2 bg-sky-50 rounded-lg">
+          <Plus className="h-5 w-5 text-sky-600" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Add New Competitor</h2>
@@ -101,7 +101,8 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
         <Button 
           type="submit" 
           disabled={isLoading || !name.trim() || !url.trim()}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2"
+          style={{ backgroundColor: '#38BDF8' }}
+          className="hover:bg-sky-600 text-white px-6 py-2"
         >
           {isLoading ? (
             <div className="flex items-center gap-2">

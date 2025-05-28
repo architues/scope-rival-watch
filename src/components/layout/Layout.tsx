@@ -28,11 +28,11 @@ export const Layout = ({ children, user, onLogout }: LayoutProps) => {
               <div className="flex items-center gap-4">
                 <Button variant="ghost" size="sm" className="relative">
                   <Bell className="h-5 w-5 text-gray-600" />
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-purple-600 rounded-full"></span>
+                  <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full" style={{backgroundColor: '#38BDF8'}}></span>
                 </Button>
                 
                 <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{backgroundColor: '#38BDF8'}}>
                     <span className="text-white text-sm font-medium">
                       {user.name?.[0]?.toUpperCase() || 'U'}
                     </span>

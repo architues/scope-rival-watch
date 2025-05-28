@@ -56,7 +56,7 @@ export const AppSidebar = () => {
               className="h-8 w-auto"
               onError={handleImageError}
             />
-            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{display: 'none'}}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{display: 'none', backgroundColor: '#38BDF8'}}>
               SR
             </div>
           </div>
@@ -79,7 +79,7 @@ export const AppSidebar = () => {
                     className={`
                       w-full justify-start px-3 py-2 rounded-lg transition-colors duration-200 font-medium
                       ${item.isActive 
-                        ? 'bg-purple-50 text-purple-600 border border-purple-200' 
+                        ? 'bg-sky-50 text-sky-600 border border-sky-200' 
                         : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
                       }
                     `}
@@ -98,7 +98,7 @@ export const AppSidebar = () => {
       
       <SidebarFooter className="p-6 border-t border-gray-200">
         <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <div className="w-8 h-8 bg-purple-600 rounded-full mx-auto mb-3 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full mx-auto mb-3 flex items-center justify-center" style={{backgroundColor: '#38BDF8'}}>
             <span className="text-white text-xs font-semibold">PRO</span>
           </div>
           <p className="text-sm font-medium text-gray-900 mb-1">Pro Plan</p>
