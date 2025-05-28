@@ -46,8 +46,8 @@ export const AppSidebar = () => {
   };
 
   return (
-    <Sidebar className="w-64 bg-white border-r border-gray-200">
-      <SidebarHeader className="p-6 border-b border-gray-200">
+    <Sidebar className="w-64 bg-gradient-to-b from-slate-50 to-blue-50 border-r border-blue-100">
+      <SidebarHeader className="p-6 border-b border-blue-100">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center">
             <img 
@@ -61,8 +61,8 @@ export const AppSidebar = () => {
             </div>
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">ScopeRival</h1>
-            <p className="text-xs text-gray-500">Competitor Intelligence</p>
+            <h1 className="text-lg font-semibold text-slate-800">ScopeRival</h1>
+            <p className="text-xs text-slate-600">Competitor Intelligence</p>
           </div>
         </div>
       </SidebarHeader>
@@ -79,8 +79,8 @@ export const AppSidebar = () => {
                     className={`
                       w-full justify-start px-3 py-2 rounded-lg transition-colors duration-200 font-medium
                       ${item.isActive 
-                        ? 'bg-sky-50 text-sky-600 border border-sky-200' 
-                        : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
+                        ? 'bg-blue-100 text-blue-700 border border-blue-200 shadow-sm' 
+                        : 'hover:bg-blue-50 text-slate-700 hover:text-blue-700'
                       }
                     `}
                   >
@@ -96,13 +96,13 @@ export const AppSidebar = () => {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-6 border-t border-gray-200">
-        <div className="bg-gray-50 rounded-lg p-4 text-center">
+      <SidebarFooter className="p-6 border-t border-blue-100">
+        <div className="bg-blue-50 rounded-lg p-4 text-center border border-blue-100">
           <div className="w-8 h-8 rounded-full mx-auto mb-3 flex items-center justify-center" style={{backgroundColor: '#38BDF8'}}>
             <span className="text-white text-xs font-semibold">PRO</span>
           </div>
-          <p className="text-sm font-medium text-gray-900 mb-1">Pro Plan</p>
-          <p className="text-xs text-gray-500">Unlimited tracking</p>
+          <p className="text-sm font-medium text-slate-800 mb-1">Pro Plan</p>
+          <p className="text-xs text-slate-600">Unlimited tracking</p>
         </div>
       </SidebarFooter>
     </Sidebar>
