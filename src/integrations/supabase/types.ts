@@ -57,6 +57,7 @@ export type Database = {
           created_at: string | null
           id: string
           last_checked: string | null
+          last_hash: string | null
           name: string
           status: Database["public"]["Enums"]["competitor_status"] | null
           updated_at: string | null
@@ -69,6 +70,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           last_checked?: string | null
+          last_hash?: string | null
           name: string
           status?: Database["public"]["Enums"]["competitor_status"] | null
           updated_at?: string | null
@@ -81,6 +83,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           last_checked?: string | null
+          last_hash?: string | null
           name?: string
           status?: Database["public"]["Enums"]["competitor_status"] | null
           updated_at?: string | null

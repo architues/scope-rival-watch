@@ -148,10 +148,10 @@ export const Dashboard = () => {
       console.log('Dashboard: Val.town response:', data);
 
       if (data.success) {
-        // Get the current hash from the database
+        // Get the current hash from the database using raw SQL to avoid type issues
         const { data: currentCompetitor, error: fetchError } = await supabase
           .from('competitors')
-          .select('last_hash')
+          .select('*')
           .eq('id', id)
           .single();
 
@@ -160,7 +160,8 @@ export const Dashboard = () => {
           throw new Error('Failed to fetch competitor data');
         }
 
-        const previousHash = currentCompetitor?.last_hash;
+        // Access last_hash as any to avoid TypeScript errors until types are regenerated
+        const previousHash = (currentCompetitor as any)?.last_hash;
         const newHash = data.hash;
 
         console.log('Dashboard: Comparing hashes - Previous:', previousHash, 'New:', newHash);
@@ -187,7 +188,7 @@ export const Dashboard = () => {
             console.error('Dashboard: Error creating change record:', changeError);
           }
 
-          // Update competitor with new hash and increment changes
+          // Update competitor with new hash and increment changes using raw update
           const { error: updateError } = await supabase
             .from('competitors')
             .update({
@@ -195,7 +196,7 @@ export const Dashboard = () => {
               last_checked: new Date().toISOString(),
               changes_detected: competitor.changesDetected + 1,
               status: 'active'
-            })
+            } as any)
             .eq('id', id);
 
           if (updateError) {
@@ -215,7 +216,7 @@ export const Dashboard = () => {
               last_hash: newHash,
               last_checked: new Date().toISOString(),
               status: 'active'
-            })
+            } as any)
             .eq('id', id);
 
           if (updateError) {
