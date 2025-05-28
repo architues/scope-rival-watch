@@ -10,6 +10,7 @@ import { useChangeRecords } from '@/hooks/useChangeRecords';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Competitor } from '@/types/competitor';
+import { supabase } from '@/integrations/supabase/client';
 
 export const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -26,11 +27,6 @@ export const Dashboard = () => {
   const { changes, subscribeToChanges } = useChangeRecords();
 
   console.log('Dashboard: Rendering with user:', user ? `ID: ${user.id}` : 'No user');
-  console.log('Dashboard: Auth loading:', authLoading);
-  console.log('Dashboard: Competitors loading:', competitorsLoading);
-  console.log('Dashboard: Competitors count:', competitors.length);
-  console.log('Dashboard: Error:', competitorsError);
-  console.log('Dashboard: Is adding competitor:', isAddingCompetitor);
 
   // Set up real-time subscriptions
   useEffect(() => {
@@ -138,39 +134,137 @@ export const Dashboard = () => {
       updates: { status: 'checking' }
     });
 
-    // Simulate monitoring process (will be replaced with real Edge Function)
-    setTimeout(() => {
-      const hasChanges = Math.random() > 0.5;
+    try {
+      console.log('Dashboard: Calling Val.town to scrape competitor:', competitor.url);
       
-      if (hasChanges) {
-        updateCompetitor({ 
-          id, 
-          updates: { 
-            status: 'active',
-            lastChecked: new Date(),
-            changesDetected: competitor.changesDetected + 1
-          }
-        });
-        
-        toast({
-          title: "Changes detected!",
-          description: `New changes found on ${competitor.name}`,
-        });
-      } else {
-        updateCompetitor({ 
-          id, 
-          updates: { 
-            status: 'active',
-            lastChecked: new Date()
-          }
-        });
-        
-        toast({
-          title: "No changes found",
-          description: `${competitor.name} appears unchanged.`,
-        });
+      // Call Val.town API to scrape the competitor's website
+      const response = await fetch(`https://www.val.town/x/architues/scrapecompetitor/code/main.tsx?url=${encodeURIComponent(competitor.url)}`);
+      
+      if (!response.ok) {
+        throw new Error(`Val.town API error: ${response.status} ${response.statusText}`);
       }
-    }, 2000);
+      
+      const data = await response.json();
+      console.log('Dashboard: Val.town response:', data);
+
+      if (data.success) {
+        // Get the current hash from the database
+        const { data: currentCompetitor, error: fetchError } = await supabase
+          .from('competitors')
+          .select('last_hash')
+          .eq('id', id)
+          .single();
+
+        if (fetchError) {
+          console.error('Dashboard: Error fetching current competitor data:', fetchError);
+          throw new Error('Failed to fetch competitor data');
+        }
+
+        const previousHash = currentCompetitor?.last_hash;
+        const newHash = data.hash;
+
+        console.log('Dashboard: Comparing hashes - Previous:', previousHash, 'New:', newHash);
+
+        // Check if content has changed
+        const hasChanges = previousHash && previousHash !== newHash;
+
+        if (hasChanges) {
+          console.log('Dashboard: Changes detected! Creating change record');
+          
+          // Create a change record
+          const { error: changeError } = await supabase
+            .from('change_records')
+            .insert([{
+              competitor_id: id,
+              competitor_name: competitor.name,
+              change_type: 'content',
+              description: 'Website content has been updated',
+              severity: 'medium',
+              detected_at: new Date().toISOString()
+            }]);
+
+          if (changeError) {
+            console.error('Dashboard: Error creating change record:', changeError);
+          }
+
+          // Update competitor with new hash and increment changes
+          const { error: updateError } = await supabase
+            .from('competitors')
+            .update({
+              last_hash: newHash,
+              last_checked: new Date().toISOString(),
+              changes_detected: competitor.changesDetected + 1,
+              status: 'active'
+            })
+            .eq('id', id);
+
+          if (updateError) {
+            console.error('Dashboard: Error updating competitor:', updateError);
+            throw new Error('Failed to update competitor data');
+          }
+
+          toast({
+            title: "Changes detected!",
+            description: `New changes found on ${competitor.name}`,
+          });
+        } else {
+          // No changes detected, just update the last checked time and hash
+          const { error: updateError } = await supabase
+            .from('competitors')
+            .update({
+              last_hash: newHash,
+              last_checked: new Date().toISOString(),
+              status: 'active'
+            })
+            .eq('id', id);
+
+          if (updateError) {
+            console.error('Dashboard: Error updating competitor:', updateError);
+            throw new Error('Failed to update competitor data');
+          }
+
+          toast({
+            title: "No changes found",
+            description: `${competitor.name} appears unchanged.`,
+          });
+        }
+
+        // Refresh the competitors data
+        window.location.reload();
+        
+      } else {
+        // Val.town returned an error
+        console.error('Dashboard: Val.town scraping failed:', data.error);
+        throw new Error(data.error || 'Failed to scrape website');
+      }
+
+    } catch (error) {
+      console.error('Dashboard: Error checking changes:', error);
+      
+      // Update status to error
+      updateCompetitor({ 
+        id, 
+        updates: { status: 'error' }
+      });
+
+      let errorMessage = 'Failed to check for changes';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Val.town')) {
+          errorMessage = 'Monitoring service is temporarily unavailable. Please try again later.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      toast({
+        title: "Error checking changes",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleRemoveCompetitor = (id: string) => {
