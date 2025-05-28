@@ -10,9 +10,9 @@ export const useCompetitors = () => {
 
   console.log('useCompetitors: user state', user ? `User ID: ${user.id}` : 'No user');
 
-  const { data: competitors = [], isLoading, error } = useQuery({
+  const { data: competitors = [], isLoading, error } = useQuery<Competitor[]>({
     queryKey: ['competitors', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Competitor[]> => {
       if (!user) {
         console.log('useCompetitors: No user found, returning empty array');
         return [];
@@ -22,14 +22,14 @@ export const useCompetitors = () => {
       console.log('useCompetitors: RLS is currently DISABLED for testing');
       
       // Create a promise that will timeout after 5 seconds
-      const timeoutPromise = new Promise((_, reject) => {
+      const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
           reject(new Error('Query timeout after 5 seconds'));
         }, 5000);
       });
 
       // Create the actual query promise
-      const queryPromise = (async () => {
+      const queryPromise = (async (): Promise<Competitor[]> => {
         try {
           console.log('useCompetitors: About to execute Supabase query...');
           
@@ -89,7 +89,7 @@ export const useCompetitors = () => {
     gcTime: 0, // Don't cache
   });
 
-  console.log('useCompetitors: Query state - competitors:', competitors?.length || 0, 'isLoading:', isLoading, 'error:', error?.message || 'none');
+  console.log('useCompetitors: Query state - competitors:', competitors.length, 'isLoading:', isLoading, 'error:', error?.message || 'none');
 
   const addCompetitorMutation = useMutation({
     mutationFn: async (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {
