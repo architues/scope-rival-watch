@@ -1,11 +1,17 @@
-
 import { Users } from 'lucide-react';
 
 interface DashboardErrorStateProps {
   error: Error | null;
+  /**
+   * Called when the user clicks the Retry button. Should trigger a data refresh.
+   * Defaults to a no-op if not provided.
+   */
+  onRetry?: () => void;
 }
 
-export const DashboardErrorState = ({ error }: DashboardErrorStateProps) => {
+export const DashboardErrorState = ({ error, onRetry }: DashboardErrorStateProps) => {
+  // Fallback to a no-op if onRetry is not provided
+  const handleRetry = onRetry || (() => {});
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -21,7 +27,7 @@ export const DashboardErrorState = ({ error }: DashboardErrorStateProps) => {
                 : 'There was an error loading your data. Please try again.'}
             </p>
             <button 
-              onClick={() => window.location.reload()} 
+              onClick={handleRetry}
               className="text-white px-4 py-2 rounded-lg hover:bg-sky-700"
               style={{backgroundColor: '#38BDF8'}}
             >

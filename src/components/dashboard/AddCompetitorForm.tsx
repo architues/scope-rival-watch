@@ -1,28 +1,78 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Globe } from 'lucide-react';
 import { Competitor } from '@/types/competitor';
+import { toast } from '@/hooks/use-toast';
+
+const DEBUG = process.env.NODE_ENV === 'development';
 
 interface AddCompetitorFormProps {
   onAddCompetitor: (competitor: Omit<Competitor, 'id' | 'addedAt'>) => void;
 }
 
+/**
+ * Form component for adding new competitors to track.
+ * Handles form validation, URL formatting, and submission.
+ * Provides visual feedback for validation errors and loading states.
+ */
 export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) => {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ name?: string; url?: string }>({});
 
+  /**
+   * Validates the form inputs:
+   * - Checks for required fields
+   * - Validates URL format
+   * - Sets error messages for invalid fields
+   * @returns boolean indicating if the form is valid
+   */
+  const validateForm = () => {
+    const newErrors: { name?: string; url?: string } = {};
+    
+    if (!name.trim()) {
+      newErrors.name = 'Competitor name is required';
+    }
+    
+    if (!url.trim()) {
+      newErrors.url = 'Website URL is required';
+    } else {
+      try {
+        const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+        new URL(formattedUrl);
+      } catch {
+        newErrors.url = 'Please enter a valid URL';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  /**
+   * Handles form submission:
+   * 1. Validates form inputs
+   * 2. Formats URL if needed
+   * 3. Creates competitor object
+   * 4. Calls onAddCompetitor callback
+   * 5. Resets form on success
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !url.trim()) {
-      console.log('AddCompetitorForm: Form validation failed - missing name or url');
+    if (!validateForm()) {
+      if (DEBUG) console.log('AddCompetitorForm: Form validation failed - missing name or url');
+      toast({
+        title: "Validation error",
+        description: "Please check the form for errors.",
+        variant: "destructive",
+      });
       return;
     }
 
-    console.log('AddCompetitorForm: Submitting competitor', { name, url });
+    if (DEBUG) console.log('AddCompetitorForm: Submitting competitor', { name, url });
     setIsLoading(true);
     
     try {
@@ -37,15 +87,21 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
         changesDetected: 0
       };
 
-      console.log('AddCompetitorForm: Calling onAddCompetitor with:', competitor);
+      if (DEBUG) console.log('AddCompetitorForm: Calling onAddCompetitor with:', competitor);
       onAddCompetitor(competitor);
       
       // Reset form
       setName('');
       setUrl('');
-      console.log('AddCompetitorForm: Form reset after submission');
+      setErrors({});
+      if (DEBUG) console.log('AddCompetitorForm: Form reset after submission');
     } catch (error) {
-      console.error('AddCompetitorForm: Error during submission:', error);
+      if (DEBUG) console.error('AddCompetitorForm: Error during submission:', error);
+      toast({
+        title: "Error adding competitor",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -75,9 +131,12 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
               placeholder="e.g., Acme Corp"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full"
+              className={`w-full ${errors.name ? 'border-red-500' : ''}`}
               required
             />
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="url" className="text-sm font-medium text-gray-700">
@@ -89,12 +148,15 @@ export const AddCompetitorForm = ({ onAddCompetitor }: AddCompetitorFormProps) =
                 id="url"
                 type="url"
                 placeholder="competitor.com"
-                className="pl-10 w-full"
+                className={`pl-10 w-full ${errors.url ? 'border-red-500' : ''}`}
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 required
               />
             </div>
+            {errors.url && (
+              <p className="text-sm text-red-500">{errors.url}</p>
+            )}
           </div>
         </div>
         

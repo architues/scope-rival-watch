@@ -4,48 +4,65 @@ import { Competitor } from '@/types/competitor';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from './useAuth';
 
+const DEBUG = process.env.NODE_ENV === 'development';
+
+/**
+ * Hook for managing competitors with real-time updates and optimistic UI.
+ * Handles fetching, adding, updating, and removing competitors.
+ * Uses React Query for data management and caching.
+ */
 export const useCompetitors = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  console.log('useCompetitors: user state', user ? `User ID: ${user.id}` : 'No user');
+  if (DEBUG) console.log('useCompetitors: user state', user ? `User ID: ${user.id}` : 'No user');
 
+  /**
+   * Fetches competitors for the current user.
+   * Includes error handling and data transformation.
+   */
   const { data: competitors = [], isLoading, error } = useQuery<Competitor[]>({
     queryKey: ['competitors', user?.id],
     queryFn: async (): Promise<Competitor[]> => {
       if (!user) {
-        console.log('useCompetitors: No user found, returning empty array');
+        if (DEBUG) console.log('useCompetitors: No user found, returning empty array');
         return [];
       }
       
-      console.log('useCompetitors: Starting query for user:', user.id);
+      if (DEBUG) console.log('useCompetitors: Starting query for user:', user.id);
       
       try {
         // First, let's check what competitors exist in the database
-        console.log('useCompetitors: Checking all competitors in database...');
+        if (DEBUG) console.log('useCompetitors: Checking all competitors in database...');
         const { data: allCompetitors, error: allError } = await supabase
           .from('competitors')
           .select('*');
         
-        console.log('useCompetitors: All competitors in database:', allCompetitors);
-        console.log('useCompetitors: All competitors error:', allError);
+        if (DEBUG) console.log('useCompetitors: All competitors in database:', allCompetitors);
+        if (DEBUG) console.log('useCompetitors: All competitors error:', allError);
         
         // Now fetch user's specific competitors
-        console.log('useCompetitors: Fetching competitors for user:', user.id);
+        if (DEBUG) console.log('useCompetitors: Fetching competitors for user:', user.id);
         const { data, error } = await supabase
           .from('competitors')
           .select('*')
           .eq('user_id', user.id)
           .order('added_at', { ascending: false });
 
-        console.log('useCompetitors: User-specific query result:', data);
-        console.log('useCompetitors: User-specific query error:', error);
+        if (DEBUG) console.log('useCompetitors: User-specific query result:', data);
+        if (DEBUG) console.log('useCompetitors: User-specific query error:', error);
 
         if (error) {
-          console.error('useCompetitors: Supabase error:', error);
+          if (DEBUG) console.error('useCompetitors: Supabase error:', error);
+          toast({
+            title: "Error loading competitors",
+            description: "Failed to load your competitors. Please try refreshing the page.",
+            variant: "destructive",
+          });
           throw error;
         }
 
+        // Transform database records into Competitor objects
         const mappedCompetitors = (data || []).map((comp): Competitor => ({
           id: comp.id,
           name: comp.name,
@@ -56,11 +73,16 @@ export const useCompetitors = () => {
           addedAt: new Date(comp.added_at),
         }));
 
-        console.log('useCompetitors: Mapped competitors:', mappedCompetitors);
+        if (DEBUG) console.log('useCompetitors: Mapped competitors:', mappedCompetitors);
         return mappedCompetitors;
         
       } catch (fetchError) {
-        console.error('useCompetitors: Fetch error details:', fetchError);
+        if (DEBUG) console.error('useCompetitors: Fetch error details:', fetchError);
+        toast({
+          title: "Error loading competitors",
+          description: "An unexpected error occurred while loading your competitors.",
+          variant: "destructive",
+        });
         throw fetchError;
       }
     },
@@ -70,16 +92,25 @@ export const useCompetitors = () => {
     gcTime: 300000,
   });
 
-  console.log('useCompetitors: Final state - competitors count:', competitors.length, 'isLoading:', isLoading, 'error:', error?.message || 'none');
+  if (DEBUG) console.log('useCompetitors: Final state - competitors count:', competitors.length, 'isLoading:', isLoading, 'error:', error?.message || 'none');
 
+  /**
+   * Mutation for adding a new competitor.
+   * Handles validation, data transformation, and error handling.
+   */
   const addCompetitorMutation = useMutation({
     mutationFn: async (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {
       if (!user) {
-        console.error('useCompetitors: User not authenticated');
+        if (DEBUG) console.error('useCompetitors: User not authenticated');
+        toast({
+          title: "Authentication error",
+          description: "Please sign in to add competitors.",
+          variant: "destructive",
+        });
         throw new Error('User not authenticated');
       }
 
-      console.log('useCompetitors: Adding competitor for user:', user.id, newCompetitor);
+      if (DEBUG) console.log('useCompetitors: Adding competitor for user:', user.id, newCompetitor);
 
       const { data, error } = await supabase
         .from('competitors')
@@ -95,15 +126,26 @@ export const useCompetitors = () => {
         .single();
 
       if (error) {
-        console.error('useCompetitors: Error adding competitor:', error);
+        if (DEBUG) console.error('useCompetitors: Error adding competitor:', error);
+        let errorMessage = 'Failed to add competitor';
+        if (error.code === '23505') {
+          errorMessage = 'A competitor with this URL already exists';
+        } else if (error.code === '23503') {
+          errorMessage = 'Invalid competitor data';
+        }
+        toast({
+          title: "Error adding competitor",
+          description: errorMessage,
+          variant: "destructive",
+        });
         throw error;
       }
       
-      console.log('useCompetitors: Successfully added competitor:', data);
+      if (DEBUG) console.log('useCompetitors: Successfully added competitor:', data);
       return data;
     },
     onSuccess: (data) => {
-      console.log('useCompetitors: Add competitor mutation succeeded:', data);
+      if (DEBUG) console.log('useCompetitors: Add competitor mutation succeeded:', data);
       queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
       toast({
         title: "Competitor added",
@@ -111,18 +153,17 @@ export const useCompetitors = () => {
       });
     },
     onError: (error) => {
-      console.error('useCompetitors: Add competitor mutation failed:', error);
-      toast({
-        title: "Error",
-        description: `Failed to add competitor: ${error.message}`,
-        variant: "destructive",
-      });
+      if (DEBUG) console.error('useCompetitors: Add competitor mutation failed:', error);
     },
   });
 
+  /**
+   * Mutation for updating a competitor's status and metadata.
+   * Used for tracking checking status and change detection.
+   */
   const updateCompetitorMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Competitor> }) => {
-      console.log('useCompetitors: Updating competitor:', id, updates);
+      if (DEBUG) console.log('useCompetitors: Updating competitor:', id, updates);
       
       const { error } = await supabase
         .from('competitors')
@@ -134,23 +175,37 @@ export const useCompetitors = () => {
         .eq('id', id);
 
       if (error) {
-        console.error('useCompetitors: Error updating competitor:', error);
+        if (DEBUG) console.error('useCompetitors: Error updating competitor:', error);
+        toast({
+          title: "Error updating competitor",
+          description: "Failed to update competitor status. Please try again.",
+          variant: "destructive",
+        });
         throw error;
       }
       
-      console.log('useCompetitors: Successfully updated competitor:', id);
+      if (DEBUG) console.log('useCompetitors: Successfully updated competitor:', id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
     },
     onError: (error) => {
-      console.error('useCompetitors: Update competitor mutation failed:', error);
+      if (DEBUG) console.error('useCompetitors: Update competitor mutation failed:', error);
+      toast({
+        title: "Error updating competitor",
+        description: "Failed to update competitor. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
+  /**
+   * Mutation for removing a competitor.
+   * Handles cleanup and error handling.
+   */
   const removeCompetitorMutation = useMutation({
     mutationFn: async (id: string) => {
-      console.log('useCompetitors: Removing competitor:', id);
+      if (DEBUG) console.log('useCompetitors: Removing competitor:', id);
       
       const { error } = await supabase
         .from('competitors')
@@ -158,11 +213,16 @@ export const useCompetitors = () => {
         .eq('id', id);
 
       if (error) {
-        console.error('useCompetitors: Error removing competitor:', error);
+        if (DEBUG) console.error('useCompetitors: Error removing competitor:', error);
+        toast({
+          title: "Error removing competitor",
+          description: "Failed to remove competitor. Please try again.",
+          variant: "destructive",
+        });
         throw error;
       }
       
-      console.log('useCompetitors: Successfully removed competitor:', id);
+      if (DEBUG) console.log('useCompetitors: Successfully removed competitor:', id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
@@ -172,10 +232,10 @@ export const useCompetitors = () => {
       });
     },
     onError: (error) => {
-      console.error('useCompetitors: Remove competitor mutation failed:', error);
+      if (DEBUG) console.error('useCompetitors: Remove competitor mutation failed:', error);
       toast({
-        title: "Error",
-        description: `Failed to remove competitor: ${error.message}`,
+        title: "Error removing competitor",
+        description: "Failed to remove competitor. Please try again.",
         variant: "destructive",
       });
     },

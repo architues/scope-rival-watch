@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 interface AuthFormProps {
   onMagicLinkSent: (email: string) => void;
 }
+
+const DEBUG = process.env.NODE_ENV === 'development';
 
 export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
   const [email, setEmail] = useState('');
@@ -46,11 +47,9 @@ export const AuthForm = ({ onMagicLinkSent }: AuthFormProps) => {
         }
       }
       
-      if (!result.error) {
-        console.log(`${isLogin ? 'Sign in' : 'Sign up'} successful`);
-      }
+      if (DEBUG) console.log(`${isLogin ? 'Sign in' : 'Sign up'} successful`);
     } catch (error) {
-      console.error('Auth error:', error);
+      if (DEBUG) console.error('Auth error:', error);
     } finally {
       setIsLoading(false);
     }

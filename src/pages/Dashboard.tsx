@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { DashboardLoadingState } from '@/components/dashboard/DashboardLoadingState';
@@ -12,6 +11,9 @@ import { useCompetitorChecker } from '@/hooks/useCompetitorChecker';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Competitor } from '@/types/competitor';
+import { useQueryClient } from '@tanstack/react-query';
+
+const DEBUG = process.env.NODE_ENV === 'development';
 
 export const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -26,18 +28,19 @@ export const Dashboard = () => {
   
   const { changes, subscribeToChanges } = useChangeRecords();
   const { checkCompetitorChanges } = useCompetitorChecker();
+  const queryClient = useQueryClient();
 
-  console.log('Dashboard: Rendering with user:', user ? `ID: ${user.id}` : 'No user');
+  if (DEBUG) console.log('Dashboard: Rendering with user:', user ? `ID: ${user.id}` : 'No user');
 
   // Set up real-time subscriptions
   useEffect(() => {
     if (user && !authLoading) {
-      console.log('Dashboard: Setting up real-time subscriptions for user:', user.id);
+      if (DEBUG) console.log('Dashboard: Setting up real-time subscriptions for user:', user.id);
       try {
         const unsubscribe = subscribeToChanges();
         return unsubscribe;
       } catch (error) {
-        console.error('Dashboard: Error setting up real-time subscriptions:', error);
+        if (DEBUG) console.error('Dashboard: Error setting up real-time subscriptions:', error);
       }
     }
   }, [subscribeToChanges, user, authLoading]);
@@ -45,7 +48,7 @@ export const Dashboard = () => {
   // Handle errors with more specific messaging
   useEffect(() => {
     if (competitorsError) {
-      console.error('Dashboard: Competitors error:', competitorsError);
+      if (DEBUG) console.error('Dashboard: Competitors error:', competitorsError);
       
       let errorMessage = "Please try refreshing the page.";
       
@@ -67,24 +70,26 @@ export const Dashboard = () => {
 
   // Show loading state if auth is loading or user is not loaded or competitors are loading
   if (authLoading || !user || competitorsLoading) {
-    console.log('Dashboard: Showing loading state - authLoading:', authLoading, 'user:', !!user, 'competitorsLoading:', competitorsLoading);
+    if (DEBUG) console.log('Dashboard: Showing loading state - authLoading:', authLoading, 'user:', !!user, 'competitorsLoading:', competitorsLoading);
     return <DashboardLoadingState authLoading={authLoading} user={user} competitorsLoading={competitorsLoading} />;
   }
 
   // Show error state if there's a persistent error
   if (competitorsError && !competitorsLoading) {
-    return <DashboardErrorState error={competitorsError} />;
+    return <DashboardErrorState error={competitorsError} onRetry={() => {
+      queryClient.invalidateQueries({ queryKey: ['competitors', user?.id] });
+    }} />;
   }
 
   const handleAddCompetitor = (newCompetitor: Omit<Competitor, 'id' | 'addedAt'>) => {
-    console.log('Dashboard: handleAddCompetitor called with:', newCompetitor);
+    if (DEBUG) console.log('Dashboard: handleAddCompetitor called with:', newCompetitor);
     addCompetitor(newCompetitor);
   };
 
   const handleCheckChanges = async (id: string) => {
     const competitor = competitors.find(c => c.id === id);
     if (!competitor) {
-      console.error('Dashboard: Competitor not found:', id);
+      if (DEBUG) console.error('Dashboard: Competitor not found:', id);
       return;
     }
 
@@ -96,7 +101,7 @@ export const Dashboard = () => {
   };
 
   const handleRemoveCompetitor = (id: string) => {
-    console.log('Dashboard: handleRemoveCompetitor called for competitor:', id);
+    if (DEBUG) console.log('Dashboard: handleRemoveCompetitor called for competitor:', id);
     removeCompetitor(id);
   };
 
@@ -105,7 +110,7 @@ export const Dashboard = () => {
     new Date(c.detectedAt).getTime() > Date.now() - 86400000 // 24 hours
   ).length;
 
-  console.log('Dashboard: Rendering main content with', competitors.length, 'competitors');
+  if (DEBUG) console.log('Dashboard: Rendering main content with', competitors.length, 'competitors');
 
   return (
     <div className="bg-gray-50 min-h-screen">
