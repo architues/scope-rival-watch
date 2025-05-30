@@ -28,39 +28,43 @@ export const ChangeHistoryTable = ({ changes }: ChangeHistoryTableProps) => {
 
   if (changes.length === 0) {
     return (
-      <div className="glass-card animate-fade-in">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 gradient-primary rounded-xl">
-            <History className="h-6 w-6 text-white" />
+          <div className="p-2 bg-sky-50 rounded-lg">
+            <History className="h-5 w-5 text-sky-600" />
           </div>
           <div>
-            <h2 className="text-xl font-bold font-jakarta">Change History</h2>
-            <p className="text-sm text-muted-foreground">Track all competitor changes</p>
+            <h2 className="text-lg font-semibold text-gray-900">Change History</h2>
+            <p className="text-sm text-gray-600">Track all competitor changes</p>
           </div>
         </div>
         
-        <div className="text-center py-12">
-          <div className="w-16 h-16 gradient-secondary rounded-full mx-auto mb-4 flex items-center justify-center animate-float">
-            <History className="h-8 w-8 text-white" />
+        <div className="text-center py-16 px-8">
+          <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <History className="h-8 w-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-semibold font-jakarta mb-2">No changes detected yet</h3>
-          <p className="text-muted-foreground">Start monitoring your competitors to see changes here</p>
+          <h4 className="text-lg font-semibold text-gray-900 mb-2">No changes detected yet</h4>
+          <p className="text-gray-600 max-w-md mx-auto">
+            Start monitoring your competitors to see changes here
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="glass-card animate-fade-in">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 gradient-primary rounded-xl">
-          <History className="h-6 w-6 text-white" />
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-sky-50 rounded-lg">
+            <History className="h-5 w-5 text-sky-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Change History</h2>
+            <p className="text-sm text-gray-600">Recent competitor updates and modifications</p>
+          </div>
         </div>
-        <div className="flex-1">
-          <h2 className="text-xl font-bold font-jakarta">Change History</h2>
-          <p className="text-sm text-muted-foreground">Recent competitor updates and modifications</p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
           <TrendingUp className="h-4 w-4" />
           {changes.length} changes
         </div>
@@ -70,18 +74,17 @@ export const ChangeHistoryTable = ({ changes }: ChangeHistoryTableProps) => {
         {changes.map((change, index) => (
           <div 
             key={change.id} 
-            className="bg-background/30 border border-border/40 rounded-xl p-6 hover:bg-background/50 transition-all duration-200 group"
-            style={{ animationDelay: `${index * 0.1}s` }}
+            className="bg-gray-50 border border-gray-200 rounded-lg p-6 hover:bg-gray-100 transition-all duration-200 group"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center">
                     <span className="text-white font-bold text-xs">
                       {change.competitorName.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <h4 className="font-semibold font-jakarta">{change.competitorName}</h4>
+                  <h4 className="font-semibold text-gray-900">{change.competitorName}</h4>
                   <Badge className={getChangeTypeColor(change.changeType)}>
                     {change.changeType}
                   </Badge>
@@ -89,21 +92,21 @@ export const ChangeHistoryTable = ({ changes }: ChangeHistoryTableProps) => {
                     {change.severity}
                   </Badge>
                 </div>
-                <p className="text-muted-foreground">{change.description}</p>
+                <p className="text-gray-600">{change.description}</p>
               </div>
               <div className="text-right">
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
                   <Clock className="h-3 w-3" />
                   {change.detectedAt.toLocaleDateString()}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-gray-500">
                   {change.detectedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
             </div>
             
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button className="text-xs text-primary hover:text-primary/80 flex items-center gap-1">
+              <button className="text-xs text-sky-600 hover:text-sky-500 flex items-center gap-1">
                 <ExternalLink className="h-3 w-3" />
                 View Details
               </button>
